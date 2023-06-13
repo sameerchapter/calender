@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script>
+        // Ignore this in your implementation
+        window.isMbscDemo = true;
+    </script>
+
+    <title>
+        Single select
+    </title>
+
+    <!-- Mobiscroll JS and CSS Includes -->
+    <link rel="stylesheet" href="css/mobiscroll.javascript.min.css">
+    <script src="js/mobiscroll.javascript.min.js"></script>
+
+    <style type="text/css">
+            body {
+        margin: 0;
+        padding: 0;
+    }
+
+    button {
+        display: inline-block;
+        margin: 5px 5px 0 0;
+        padding: 10px 30px;
+        outline: 0;
+        border: 0;
+        cursor: pointer;
+        background: #5185a8;
+        color: #fff;
+        text-decoration: none;
+        font-family: arial, verdana, sans-serif;
+        font-size: 14px;
+        font-weight: 100;
+    }
+
+    input {
+        width: 100%;
+        margin: 0 0 5px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 0;
+        font-family: arial, verdana, sans-serif;
+        font-size: 14px;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+    }
+
+    .mbsc-page {
+        padding: 1em;
+    }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div mbsc-page class="demo-single-select">
+        <div style="height:100%">
+                <label>
+       Single select
+        <input mbsc-input id="demo-single-select-input" placeholder="Please select..." data-dropdown="true" data-input-style="outline" data-label-style="stacked" />
+    </label>
+    <select id="demo-single-select">
+        <option value="atl">Atlanta</option>
+        <option value="ber">Berlin</option>
+        <option value="bos">Boston</option>
+        <option value="chi">Chicago</option>
+        <option value="lon">London</option>
+        <option value="la">Los Angeles</option>
+        <option value="ny">New York</option>
+        <option value="par">Paris</option>
+        <option value="sf">San Francisco</option>
+    </select>
+        </div>
+    </div>
+
+    <script>
+        
+            mobiscroll.setOptions({
+        locale: mobiscroll.localeEn,                                       // Specify language like: locale: mobiscroll.localePl or omit setting to use default
+        theme: 'ios',                                                      // Specify theme like: theme: 'ios' or omit setting to use default
+        themeVariant: 'light'                                              // More info about themeVariant: https://docs.mobiscroll.com/5-24-1/javascript/select#opt-themeVariant
+    });
+    
+    mobiscroll.select('#demo-single-select', {
+        inputElement: document.getElementById('demo-single-select-input')  // More info about inputElement: https://docs.mobiscroll.com/5-24-1/javascript/select#opt-inputElement
+    });
+    </script>
+
+</body>
+
+</html>

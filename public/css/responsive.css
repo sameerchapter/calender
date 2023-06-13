@@ -1,0 +1,8 @@
+@media screen and (min-width: 768px) and (max-width: 1023px){
+	.wd-100{
+		max-width: 100% !important;
+	}
+	.no-flex{
+		display: block !important;
+	}
+}
