@@ -37,7 +37,6 @@ Route::post('email/resend', 'App\Http\Controllers\Auth\VerificationController@re
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::post('/saveProjectSchedule', [App\Http\Controllers\CalenderController::class, 'saveProjectSchedule'])->name('saveProjectSchedule');
 Route::post('/deleteProjectSchedule', [App\Http\Controllers\CalenderController::class, 'deleteProjectSchedule'])->name('saveProjectSchedule');
 
