@@ -237,7 +237,7 @@
                             calendar.updateEvent(data);
                             console.log(data);
                             saveProject(data);
-                            restoreShift = false;
+                            restoreShift = false;;
                             popup.close();
                         },
                         cssClass: 'mbsc-popup-button-primary'
