@@ -11,19 +11,17 @@ use Spatie\Permission\Traits\HasRoles;
 
 
 
-class User extends Authenticatable
+class Staff extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    use HasRoles;
+    use HasRoles;    
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
-    protected $connection = "webapp";
-    protected $guard = 'app';
-
+    protected $guard_name = 'staff';
     protected $fillable = [
         'name',
         'email',
@@ -48,10 +46,4 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
-    public function staff()
-    {
-        $newResource = clone $this;
-        return $newResource->setConnection('mysql')->belongsToMany('App\Models\Staff', 'foreman_staff', 'foreman_id', 'staff_id');
-    }
 }

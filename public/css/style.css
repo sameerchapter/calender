@@ -2234,3 +2234,8 @@ pre{
 .foo_monthly.pd-boxes:nth-child(odd) {
   background-color: #E5E9F3 !important;
 }
+
+.accordion-body{
+  background: white;
+}  
+

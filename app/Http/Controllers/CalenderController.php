@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Booking;
 use App\Models\ProjectSchedule;
+use Illuminate\Support\Facades\Auth;
 
 class CalenderController extends Controller
 {
@@ -16,7 +17,9 @@ class CalenderController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+       
+        $this->middleware('auth:app,staff');
+       
     }
 
     /**

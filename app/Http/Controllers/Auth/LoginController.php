@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -36,8 +38,24 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+        $this->middleware('guest:staff')->except('logout');
+        $this->middleware('guest:app')->except('logout');
     }
 
+    public function login(Request $request)
+    {
+        $this->validate($request, [
+            'email'   => 'required|email',
+            'password' => 'required|min:6'
+        ]);
+        if (Auth::guard('app')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))) {
+          
+            return redirect()->intended('/');
+        }elseif(Auth::guard('staff')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))){
+            return redirect()->intended('/');
+        }
+        return back()->withInput($request->only('email', 'remember'));
+    }
 //     protected function authenticated(Request $request, $user)
 // {
 //     //Check user role, if it is not admin then logout

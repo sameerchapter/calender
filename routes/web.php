@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/','App\Http\Controllers\CalenderController@index');
-
 // User Authentication Routes
 Route::get('login', 'App\Http\Controllers\Auth\LoginController@showLoginForm')->name('login');
 Route::post('login', 'App\Http\Controllers\Auth\LoginController@login');
@@ -37,6 +35,17 @@ Route::post('email/resend', 'App\Http\Controllers\Auth\VerificationController@re
 
 Auth::routes();
 
-Route::post('/saveProjectSchedule', [App\Http\Controllers\CalenderController::class, 'saveProjectSchedule'])->name('saveProjectSchedule');
-Route::post('/deleteProjectSchedule', [App\Http\Controllers\CalenderController::class, 'deleteProjectSchedule'])->name('saveProjectSchedule');
+Route::group(['middleware' => ['auth:app,staff']], function() {
+    Route::get('/','App\Http\Controllers\CalenderController@index')->name('calender');
+    Route::post('/saveProjectSchedule', [App\Http\Controllers\CalenderController::class, 'saveProjectSchedule'])->name('saveProjectSchedule');
+    Route::post('/deleteProjectSchedule', [App\Http\Controllers\CalenderController::class, 'deleteProjectSchedule'])->name('saveProjectSchedule');
+    Route::get('/staff-management', [App\Http\Controllers\StaffController::class, 'index'])->name('staff.list');
+    Route::post('/staff', [App\Http\Controllers\StaffController::class, 'staffs'])->name('staff.get');
+    Route::post('/add-staff', [App\Http\Controllers\StaffController::class, 'add_staff'])->name('staff.add');
+    Route::post('/edit-staff', [App\Http\Controllers\StaffController::class, 'edit_staff'])->name('staff.edit');
+    Route::post('/update-staff', [App\Http\Controllers\StaffController::class, 'update_staff'])->name('staff.update');
+    Route::get('/assign-team', [App\Http\Controllers\StaffController::class, 'assign_team'])->name('team.assign');
+    Route::post('/save-team', [App\Http\Controllers\StaffController::class, 'save_team'])->name('team.save');
 
+  });
+    
