@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class ProjectSchedule extends Model
 {
     use HasFactory;
+
+    protected $casts = [
+        'staff_id' => 'array'
+    ];
+
 }

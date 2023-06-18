@@ -88,6 +88,17 @@
                             </div>
                             <div class="mbsc-form-group">
                                 <label>
+                                    Staff
+                                    <input mbsc-input id="employee-staff-input" data-dropdown="false" data-tags="true" />
+                                </label>
+                                <select id="employee-staff-select" multiple>
+                                    @foreach($staff as $res)
+                                    <option value="{{$res->id}}">{{$res->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mbsc-form-group">
+                                <label>
                                     Notes
                                     <textarea mbsc-textarea id="employee-project-notes"></textarea>
                                 </label>
@@ -117,6 +128,7 @@
         var formatDate = mobiscroll.util.datetime.formatDate;
         var $notes = $('#employee-project-notes');
         var $name = $('#employee-project-input');
+        var $staff = $("#employee-staff-select");
         var $deleteButton = $('#employee-shifts-delete');
 
         var staff = [
@@ -132,18 +144,19 @@
 
         var shifts = [
             <?php foreach ($schedules as $res) { ?> {
-                id:"<?php echo $res->event_id; ?>",
-                start: "<?php echo $res->start; ?>",
-            end: "<?php echo $res->end; ?>",
-            title: "<?php echo $res->project_name; ?>",
-            notes: "<?php echo $res->notes; ?>",
-            resource: "<?php echo $res->foreman_id; ?>",
-            slot: <?php echo $res->slot; ?>
+                    id: "<?php echo $res->event_id; ?>",
+                    start: "<?php echo $res->start; ?>",
+                    end: "<?php echo $res->end; ?>",
+                    title: "<?php echo $res->project_name; ?>",
+                    notes: "<?php echo $res->notes; ?>",
+                    resource: "<?php echo $res->foreman_id; ?>",
+                    staff_id: <?php print(json_encode($res->staff_id)); ?>,
+                    slot: <?php echo $res->slot; ?>
                 },
             <?php
             }
             ?>
-         ];
+        ];
         var slots = [{
             id: 1,
             name: 'AM',
@@ -167,6 +180,21 @@
         function createAddPopup(args) {
             // hide delete button inside add popup
             $deleteButton.hide();
+            $.ajax({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                url: "{{ url('foreman-staff') }}",
+                data: {
+                    foreman_id: tempShift.resource
+                },
+                type: 'POST',
+                dataType: 'json',
+                success: function(result) {
+                    staffpicker.setVal(result.map(String));
+                    tempShift.staff=result.map(String);
+                }
+            });
             deleteShift = true;
             restoreShift = false;
             var slot = slots.find(function(s) {
@@ -222,17 +250,18 @@
                         text: 'Save',
                         keyCode: 'enter',
                         handler: function() {
-                            
+
                             // update event with the new properties on save button click
-                            var data={
+                            var data = {
                                 id: ev.id,
                                 title: $name.val(),
                                 notes: $notes.val(),
                                 start: new Date(tempShift.start),
-                            end: new Date(tempShift.end),
-                            resource: resource.id,
-                            color: resource.color,
-                            slot: slot.id,
+                                end: new Date(tempShift.end),
+                                staff_id: tempShift.staff,
+                                resource: resource.id,
+                                color: resource.color,
+                                slot: slot.id,
                             }
                             calendar.updateEvent(data);
                             console.log(data);
@@ -248,6 +277,10 @@
             // fill popup with the selected event data
             $notes.mobiscroll('getInst').value = ev.notes || '';
             $name.mobiscroll('getInst').value = ev.title || '';
+            if(ev.staff_id!="" && ev.staff_id!=null){
+                staffpicker.setVal(ev.staff_id.map(String));
+
+            }
             popup.open();
         }
 
@@ -268,20 +301,20 @@
             resources: staff,
             invalid: invalid,
             slots: slots,
-            extendDefaultEvent: function (ev) {
-            var d = ev.start;
-            console.log(d)
-            var start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), ev.slot == 1 ? 7 : 12);
-            var end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), ev.slot == 1 ? 13 : 18);
+            extendDefaultEvent: function(ev) {
+                var d = ev.start;
+                console.log(d)
+                var start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), ev.slot == 1 ? 7 : 12);
+                var end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), ev.slot == 1 ? 13 : 18);
 
-            return {
-                title:"New Project",
-                start: start,
-                end: end,
-                resource: ev.resource
-            };
-        },
-            onEventDragEnd: function (args, inst) { 
+                return {
+                    title: "New Project",
+                    start: start,
+                    end: end,
+                    resource: ev.resource
+                };
+            },
+            onEventDragEnd: function(args, inst) {
                 console.log(inst)
                 saveProject(args.event);
             },
@@ -289,6 +322,7 @@
                 console.log("test");
                 $name.val('');
                 $notes.val('');
+                $staff.find("option").prop("selected", false);
                 tempShift = args.event;
                 setTimeout(function() {
                     createAddPopup(args);
@@ -323,30 +357,51 @@
             responsive: {
                 medium: {
                     display: 'center',
-                    width: 400,
+                    width: 700,
                     closeOnOverlayTap: false,
                     fullScreen: false,
                     touchUi: false,
-                    showOverlay: false
+                    showOverlay: true
                 }
             }
         }).mobiscroll('getInst');
 
-        var selectpicker = $('#employee-project-name').mobiscroll().select({
+        var projectpicker = $('#employee-project-name').mobiscroll().select({
             inputElement: document.getElementById('employee-project-input'),
             display: 'anchored',
             filter: true,
             touchUi: false,
 
         }).mobiscroll('getInst');
+
+        var staffpicker = $('#employee-staff-select').mobiscroll().select({
+            inputElement: document.getElementById('employee-staff-input'),
+            selectMultiple: true,
+            touchUi: false,
+            filter: true,
+        }).mobiscroll('getInst');
+
         $notes.on('change', function(ev) {
             // update current event's title
             tempShift.notes = ev.target.value;
         });
+
+        $staff.on('change', function(e) {
+            // update current event's title
+            var options = e.target.options;
+            tempShift.staff = [];
+            for (var i = 0, l = options.length; i < l; i++) {
+                if (options[i].selected) {
+                    tempShift.staff.push(options[i].value);
+                }
+            }
+        });
+
         $name.on('change', function(ev) {
             // update current event's title
             tempShift.title = ev.target.value;
         });
+
         $deleteButton.on('click', function() {
             // delete current event on button click
             calendar.removeEvent(tempShift);
@@ -369,42 +424,42 @@
         });
     });
 
-    function saveProject(data)
-    {
-        data.start=data.start.toISOString();
-        data.end=data.end.toISOString();
+    function saveProject(data) {
+        data.start = data.start.toISOString();
+        data.end = data.end.toISOString();
         $.ajax({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        url : "{{ url('saveProjectSchedule') }}",
-        data : data,
-        type : 'POST',
-        dataType : 'json',
-        success : function(result){
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            url: "{{ url('saveProjectSchedule') }}",
+            data: data,
+            type: 'POST',
+            dataType: 'json',
+            success: function(result) {
 
-            console.log("===== " + result + " =====");
+                console.log("===== " + result + " =====");
 
-        }
-    });
+            }
+        });
     }
 
-    function deleteProject(id)
-    {
+    function deleteProject(id) {
         $.ajax({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        url : "{{ url('deleteProjectSchedule') }}",
-        data : {id:id},
-        type : 'POST',
-        dataType : 'json',
-        success : function(result){
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            url: "{{ url('deleteProjectSchedule') }}",
+            data: {
+                id: id
+            },
+            type: 'POST',
+            dataType: 'json',
+            success: function(result) {
 
-            console.log("===== " + result + " =====");
+                console.log("===== " + result + " =====");
 
-        }
-    });
+            }
+        });
     }
 </script>
 @endsection
