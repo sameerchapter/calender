@@ -36,18 +36,25 @@ class CalenderController extends Controller
         $projects=Booking::all();
         $staff=Staff::all();
         $schedules=ProjectSchedule::all();
-        return view('calender',compact('foreman','projects','schedules','staff'));
+        $schedules=ProjectSchedule::all();
+        $latest_id=ProjectSchedule::latest()->first();
+        if($latest_id)
+        {
+            $latest_id = $latest_id->id;
+        }else{
+            $latest_id =0;  
+        }
+        return view('calender',compact('foreman','projects','schedules','staff','latest_id'));
     }
 
     public function saveProjectSchedule(Request $request)
     {
-        $result=ProjectSchedule::where('event_id',$request->get('id'))->get();
-        if(count($result)>0){          
-        $schedule=ProjectSchedule::find($result[0]->id);
+        if(!empty($request->get('id'))){          
+        $schedule=ProjectSchedule::find($request->get('id'));
        }else{
         $schedule=new ProjectSchedule;
        }
-       $schedule->event_id=$request->get('id');
+       $schedule->event_id="test";
        $schedule->project_name=$request->get('title');
        $schedule->slot=$request->get('slot');
        $schedule->foreman_id=$request->get('resource');
@@ -67,7 +74,7 @@ class CalenderController extends Controller
 
     public function deleteProjectSchedule(Request $request)
     {
-        $schedule=ProjectSchedule::where('event_id',$request->get('id'))->delete();;
+        $schedule=ProjectSchedule::where('id',$request->get('id'))->delete();;
 
     }
 }

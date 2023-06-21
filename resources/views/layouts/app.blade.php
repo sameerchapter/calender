@@ -36,8 +36,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="{{ asset('js/calender/css/mobiscroll.jquery.min.css') }}" rel="stylesheet" />
     <script src="{{ asset('js/calender/js/mobiscroll.jquery.min.js') }}"></script>
-    <link href="{{ asset('js/select/css/mobiscroll.javascript.min.css') }}" rel="stylesheet" />
-    <script src="{{ asset('js/select/js/mobiscroll.javascript.min.js') }}"></script>
 </head>
 
 <body>
@@ -53,7 +51,7 @@
 
 
                 <div class="topnav mob-nav">
-                    <a href="#home" class="active"><img src="/img/logo2581-1.png"></a>
+                    <!-- <a href="#home" class="active"><img src="/img/logo2581-1.png"></a> -->
                     <div id="myLinks">
                         <a href="{{url('/')}}" class="nav_link"><img src="/img/calendar.png">Calendar</a>
                         @if(Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Project Manager'))

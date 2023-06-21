@@ -116,7 +116,7 @@
 <script>
     mobiscroll.setOptions({
         theme: 'ios',
-        themeVariant: 'light'
+        themeVariant: 'dark'
     });
 
     $(function() {
@@ -130,7 +130,7 @@
         var $name = $('#employee-project-input');
         var $staff = $("#employee-staff-select");
         var $deleteButton = $('#employee-shifts-delete');
-
+        var latest_id=<?php echo $latest_id; ?>;
         var staff = [
             <?php foreach ($foreman as $res) { ?> {
                     id: "<?php echo $res['id']; ?>",
@@ -144,7 +144,7 @@
 
         var shifts = [
             <?php foreach ($schedules as $res) { ?> {
-                    id: "<?php echo $res->event_id; ?>",
+                    id: "<?php echo $res->id; ?>",
                     start: "<?php echo $res->start; ?>",
                     end: "<?php echo $res->end; ?>",
                     title: "<?php echo $res->project_name; ?>",
@@ -192,10 +192,10 @@
                 dataType: 'json',
                 success: function(result) {
                     staffpicker.setVal(result.map(String));
-                    tempShift.staff=result.map(String);
+                    tempShift.staff = result.map(String);
                 }
             });
-            deleteShift = true;
+            deleteShift = false;
             restoreShift = false;
             var slot = slots.find(function(s) {
                 return s.id === tempShift.slot
@@ -212,7 +212,10 @@
                         keyCode: 'enter',
                         handler: function() {
                             calendar.updateEvent(tempShift);
-                            saveProject(tempShift)
+                            setTimeout(function() {
+                                tempShift.id="";
+                                saveProject(tempShift);
+                            }, 100);
                             deleteShift = false;
                             popup.close();
                         },
@@ -265,7 +268,9 @@
                             }
                             calendar.updateEvent(data);
                             console.log(data);
-                            saveProject(data);
+                            setTimeout(function() {
+                                saveProject(data);
+                            }, 100);
                             restoreShift = false;;
                             popup.close();
                         },
@@ -277,7 +282,7 @@
             // fill popup with the selected event data
             $notes.mobiscroll('getInst').value = ev.notes || '';
             $name.mobiscroll('getInst').value = ev.title || '';
-            if(ev.staff_id!="" && ev.staff_id!=null){
+            if (ev.staff_id != "" && ev.staff_id != null) {
                 staffpicker.setVal(ev.staff_id.map(String));
 
             }
@@ -315,8 +320,10 @@
                 };
             },
             onEventDragEnd: function(args, inst) {
-                console.log(inst)
-                saveProject(args.event);
+
+                setTimeout(function() {
+                    saveProject(args.event);
+                }, 100);
             },
             onEventCreate: function(args, inst) {
                 console.log("test");
@@ -324,6 +331,7 @@
                 $notes.val('');
                 $staff.find("option").prop("selected", false);
                 tempShift = args.event;
+                tempShift.id= ++latest_id;
                 setTimeout(function() {
                     createAddPopup(args);
                 }, 100);
