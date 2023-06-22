@@ -61,7 +61,7 @@ class CalenderController extends Controller
         $schedule->foreman_id = $request->get('resource');
         $schedule->notes = $request->get('notes');
         $schedule->start = $request->get('start');
-        $schedule->staff_id = $request->get('staff_id');
+        $schedule->staff_id = $request->get('staff');
         $schedule->end = $request->get('end');
         $schedule->save();
         return true;

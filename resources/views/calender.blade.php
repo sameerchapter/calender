@@ -7,13 +7,17 @@
     .status-txt span,
     .project-txt span {
         font-size: 14px;
-        color: #fff;
+        color: #000;
         font-weight: 600;
         text-align: left;
     }
 
+    .mbsc-timeline-day {
+        text-align: center;
+    }
+
     #project-details p {
-        color: #fff;
+        color: #000;
 
     }
 
@@ -69,6 +73,10 @@
         justify-content: center;
         height: 36px;
     }
+
+    .mbsc-timeline-row {
+        height: 90px;
+    }
 </style>
 
 <div id="content">
@@ -77,7 +85,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-head">
-                        <span>Projects</span>
+                        <span>Projects Calendar</span>
                     </div>
                 </div>
             </div>
@@ -92,7 +100,7 @@
                             <div class="mbsc-form-group" id="project-details">
 
                             </div>
-                            <div class="mbsc-form-group">
+                            <div class="mbsc-form-group search-project">
                                 <label>
                                     Search Project
                                     <input mbsc-input id="employee-project-input" data-dropdown="true" />
@@ -122,7 +130,7 @@
                                 </label>
                             </div>
                             <div class="mbsc-button-group">
-                                <button class="mbsc-button-block" id="employee-shifts-delete" mbsc-button data-color="danger" data-variant="outline">Delete shift</button>
+                                <button class="mbsc-button-block" id="employee-shifts-delete" mbsc-button data-color="danger" data-variant="outline">Delete Project</button>
                             </div>
                         </div>
                     </div>
@@ -134,7 +142,7 @@
 <script>
     mobiscroll.setOptions({
         theme: 'ios',
-        themeVariant: 'dark'
+        themeVariant: 'light'
     });
 
     $(function() {
@@ -243,6 +251,7 @@
                 ]
             });
             $("#project-details").html("")
+            $(".search-project").show();
             popup.open();
 
         }
@@ -255,8 +264,7 @@
             var slot = slots.find(function(s) {
                 return s.id === ev.slot
             });
-            var headerText = '<div>Edit ' + resource.name + '\'s project</div><div class="employee-shifts-day">' +
-                formatDate('DDDD', new Date(ev.start)) + ' ' + slot.name + ',' + formatDate('DD MMMM YYYY', new Date(ev.start)) + '</div>';
+            var headerText = '<div>' + $name.val() + '</div>';
 
             // show delete button inside edit popup
             $deleteButton.show();
@@ -281,7 +289,7 @@
                                 notes: $notes.val(),
                                 start: new Date(tempShift.start),
                                 end: new Date(tempShift.end),
-                                staff_id: tempShift.staff,
+                                staff: tempShift.staff,
                                 resource: resource.id,
                                 color: resource.color,
                                 slot: slot.id,
@@ -307,6 +315,7 @@
 
             }
             modalData(ev.id);
+            $(".search-project").hide();
             popup.open();
         }
 
@@ -344,7 +353,7 @@
 
                 setTimeout(function() {
                     saveProject(args.event);
-                }, 100);
+                }, 200);
             },
             onEventCreate: function(args, inst) {
                 console.log("test");
@@ -367,7 +376,7 @@
             },
             renderResource: function(resource) {
                 return '<div class="employee-shifts-cont">' +
-                    '<div class="employee-shifts-name">' + resource.name + '</div>' +
+                    '<div class="employee-shifts-name">' + resource.name + '<div>'+
                     '</div>';
             },
         }).mobiscroll('getInst');
@@ -376,6 +385,7 @@
             display: 'bottom',
             contentPadding: false,
             fullScreen: false,
+            maxWidth: 850,
             onClose: function() {
                 if (deleteShift) {
                     calendar.removeEvent(tempShift);
@@ -384,9 +394,10 @@
                 }
             },
             responsive: {
-                medium: {
+                xlarge: {
                     display: 'center',
-                    width: 1200,
+                    layout: 'fixed',
+                    width: 850,
                     closeOnOverlayTap: false,
                     fullScreen: false,
                     touchUi: false,
