@@ -39,6 +39,7 @@ Route::group(['middleware' => ['auth:app,staff']], function() {
     Route::get('/','App\Http\Controllers\CalenderController@index')->name('calender');
     Route::post('/saveProjectSchedule', [App\Http\Controllers\CalenderController::class, 'saveProjectSchedule'])->name('saveProjectSchedule');
     Route::post('/deleteProjectSchedule', [App\Http\Controllers\CalenderController::class, 'deleteProjectSchedule'])->name('saveProjectSchedule');
+    Route::post('/modal-data', [App\Http\Controllers\CalenderController::class, 'modalData']);
     Route::post('/foreman-staff', [App\Http\Controllers\CalenderController::class, 'getStaff']);
     Route::get('/staff-management', [App\Http\Controllers\StaffController::class, 'index'])->name('staff.list');
     Route::post('/staff', [App\Http\Controllers\StaffController::class, 'staffs'])->name('staff.get');

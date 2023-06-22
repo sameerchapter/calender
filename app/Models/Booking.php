@@ -22,5 +22,9 @@ class Booking extends Model
         'file' => 'array'
     ];
     protected $guarded=['id'];
-   
+    
+    public function BookingData()
+    {
+        return $this->hasMany(BookingData::class);
+    }
 }

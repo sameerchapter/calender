@@ -2,6 +2,21 @@
 
 @section('content')
 <style>
+    .address-txt span,
+    .info-txt span,
+    .status-txt span,
+    .project-txt span {
+        font-size: 14px;
+        color: #fff;
+        font-weight: 600;
+        text-align: left;
+    }
+
+    #project-details p {
+        color: #fff;
+
+    }
+
     .mbsc-timeline-slot-title {
         text-align: center !important;
     }
@@ -74,6 +89,9 @@
 
                         <div id="demo-employee-shifts-popup" class="employee-shifts-popup">
 
+                            <div class="mbsc-form-group" id="project-details">
+
+                            </div>
                             <div class="mbsc-form-group">
                                 <label>
                                     Search Project
@@ -130,7 +148,8 @@
         var $name = $('#employee-project-input');
         var $staff = $("#employee-staff-select");
         var $deleteButton = $('#employee-shifts-delete');
-        var latest_id=<?php echo $latest_id; ?>;
+        var $projectDetails = $('#project-details');
+        var latest_id = <?php echo $latest_id; ?>;
         var staff = [
             <?php foreach ($foreman as $res) { ?> {
                     id: "<?php echo $res['id']; ?>",
@@ -213,7 +232,7 @@
                         handler: function() {
                             calendar.updateEvent(tempShift);
                             setTimeout(function() {
-                                tempShift.id="";
+                                tempShift.id = "";
                                 saveProject(tempShift);
                             }, 100);
                             deleteShift = false;
@@ -223,6 +242,7 @@
                     }
                 ]
             });
+            $("#project-details").html("")
             popup.open();
 
         }
@@ -286,6 +306,7 @@
                 staffpicker.setVal(ev.staff_id.map(String));
 
             }
+            modalData(ev.id);
             popup.open();
         }
 
@@ -331,7 +352,7 @@
                 $notes.val('');
                 $staff.find("option").prop("selected", false);
                 tempShift = args.event;
-                tempShift.id= ++latest_id;
+                tempShift.id = ++latest_id;
                 setTimeout(function() {
                     createAddPopup(args);
                 }, 100);
@@ -365,7 +386,7 @@
             responsive: {
                 medium: {
                     display: 'center',
-                    width: 700,
+                    width: 1200,
                     closeOnOverlayTap: false,
                     fullScreen: false,
                     touchUi: false,
@@ -466,6 +487,24 @@
 
                 console.log("===== " + result + " =====");
 
+            }
+        });
+    }
+
+
+    function modalData(id) {
+        $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            url: "{{ url('modal-data') }}",
+            data: {
+                id: id
+            },
+            type: 'POST',
+            success: function(result) {
+                // $projectDetails.html(result);
+                $("#project-details").html(result)
             }
         });
     }

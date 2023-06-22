@@ -750,7 +750,7 @@ div#content .row {
 }
 
 .pending-txt span {
-  color: #F79256;
+  color: #F79256  !important;
   background-color: #FCF0E4;
   border-radius: 3px;
   padding: 2px 8px;
@@ -809,7 +809,7 @@ textarea.error {
 }
 
 .cancelled-txt span {
-  color: #FF5A5F;
+  color: #FF5A5F !important;
   background-color: #FCEEEC;
   border-radius: 3px;
   padding: 2px 8px;
