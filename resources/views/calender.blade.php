@@ -142,7 +142,7 @@
 <script>
     mobiscroll.setOptions({
         theme: 'ios',
-        themeVariant: 'light'
+        themeVariant: 'light',
     });
 
     $(function() {
@@ -318,14 +318,14 @@
             $(".search-project").hide();
             popup.open();
         }
-
+        var now = new Date();
         calendar = $('#demo-employee-shifts-calendar').mobiscroll().eventcalendar({
             view: {
                 timeline: {
                     type: 'week',
                     eventList: true,
-                    startDay: 1,
-                    endDay: 5
+                    startDay: now.getDay(),
+                    endDay: now.getDay()-1
                 }
             },
             data: shifts,
@@ -353,7 +353,7 @@
 
                 setTimeout(function() {
                     saveProject(args.event);
-                }, 200);
+                }, 300);
             },
             onEventCreate: function(args, inst) {
                 console.log("test");
