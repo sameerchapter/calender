@@ -67,13 +67,14 @@ class StaffController extends Controller
     public function save_team(Request $request)
     {
         $foreman_id=$request->get('foreman_id');
-        $staff_id=$request->get('staff_id');
-
-        if ($request->get('status') == true) {
+        $staff_ids=$request->get('staff_id');
+        ForemanStaff::where(array('foreman_id'=>$foreman_id))->delete();
+        foreach($staff_ids as $staff_id)
+        {
             ForemanStaff::create(array('foreman_id'=>$foreman_id,'staff_id'=>$staff_id));
-        } else {
-            ForemanStaff::where(array('foreman_id'=>$foreman_id,'staff_id'=>$staff_id))->delete();
+
         }
         return true;
+        
     }
 }

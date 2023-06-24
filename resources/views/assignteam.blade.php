@@ -35,10 +35,12 @@
                         <div class="accordion-body">
                             @foreach($staff as $s)
                             <div class="form-check">
-                                <input class="staff-checkbox form-check-input" {{ $f->staff->pluck('id')->contains($s->id)?'checked':'' }} data-foreman="{{$f->id}}" type="checkbox" id="inlineCheckbox{{$s->name}}" value="{{$s->id}}">
+                                <input class="staff-checkbox form-check-input" name="staff_id" {{ $f->staff->pluck('id')->contains($s->id)?'checked':'' }} type="checkbox" id="inlineCheckbox{{$s->name}}" value="{{$s->id}}">
                                 <label class="form-check-label" for="inlineCheckbox{{$s->name}}">{{ucfirst($s->name)}}</label>
                             </div>
                             @endforeach
+                            <br>
+                            <button data-foreman="{{$f->id}}" class="save-team align-right btn btn-color btn-secondary">Save</button>
                         </div>
                     </div>
                 </div>
@@ -48,10 +50,14 @@
     </div>
 </div>
 <script>
-    $(".staff-checkbox").on("change", function() {
+    $(".save-team").on("click", function() {
         var foreman_id = $(this).data('foreman');
-        var staff_id = $(this).val();
-        var status = $(this).prop('checked');
+        var staff_id = [];
+        $(this).parents(".accordion-body").find("input:checkbox[name=staff_id]:checked").each(function() {
+            staff_id.push($(this).val());
+        });
+
+
         $.ajax({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

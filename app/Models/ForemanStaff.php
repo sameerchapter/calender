@@ -13,5 +13,6 @@ class ForemanStaff extends Model
         'foreman_id',
         'staff_id',
     ];
+    
 
 }

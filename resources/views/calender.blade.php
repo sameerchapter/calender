@@ -36,6 +36,7 @@
         padding-bottom: 8px;
     }
 
+
     .employee-shifts-cont {
         position: relative;
         padding-left: 42px;
@@ -77,6 +78,28 @@
     .mbsc-timeline-row {
         height: 90px;
     }
+
+    .mbsc-flex-col.mbsc-flex-1-1.mbsc-popup-body.mbsc-popup-body-center.mbsc-ios.mbsc-popup-body-round {
+        border-radius: 0px !important;
+        background-color: #f6f6f6 !important;
+    }
+
+    .mbsc-flex-none.mbsc-popup-header.mbsc-popup-header-center.mbsc-ios {
+        padding: 15px;
+    }
+
+    .foreman-pill {
+        background-color: #172B4D;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 16px;
+    }
 </style>
 
 <div id="content">
@@ -85,14 +108,18 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-head">
-                        <span>Projects Calendar</span>
+                        <span id="popl">Projects Calendar</span>
                     </div>
                 </div>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="Col-md-11">
+                        <div id="foreman-staff-modal" class="mbsc-cloak">
+                            <div class="mbsc-align-center mbsc-padding">
 
+                            </div>
+                        </div>
                         <div id="demo-employee-shifts-calendar" class="md-employee-shifts"></div>
 
                         <div id="demo-employee-shifts-popup" class="employee-shifts-popup">
@@ -161,6 +188,8 @@
         var staff = [
             <?php foreach ($foreman as $res) { ?> {
                     id: "<?php echo $res['id']; ?>",
+                    staff_name: <?php print(json_encode($res->staff->pluck('name'))); ?>,
+                    staff_key: <?php print(json_encode($res->staff->pluck('id'))); ?>,
                     name: "<?php echo ucfirst($res['name']); ?>",
                     color: '#80cff7',
                 },
@@ -178,7 +207,13 @@
                     notes: "<?php echo $res->notes; ?>",
                     resource: "<?php echo $res->foreman_id; ?>",
                     staff_id: <?php print(json_encode($res->staff_id)); ?>,
-                    slot: <?php echo $res->slot; ?>
+                    slot: <?php echo $res->slot; ?>,
+                    color: "<?php $f_staff_collection =  $foreman->filter(function ($f) use ($res) {
+                                return $f->id == $res->foreman_id;
+                            })->values();
+                            $f_staff_array = (count($f_staff_collection) > 0) ? $f_staff_collection[0]->staff->pluck('id')->toArray() : [];
+                            $staff_array = is_array($res->staff_id) ? $res->staff_id : [];
+                            echo empty(array_diff($f_staff_array, $staff_array)) ? "blue" : "red"; ?>"
                 },
             <?php
             }
@@ -203,6 +238,15 @@
             resource: 2,
             slot: 2
         }];
+
+        function array_diff(array1, array2) {
+            var difference = $.grep(array1, function(el) {
+                return $.inArray(el, array2) < 0
+            });
+            return difference.concat($.grep(array2, function(el) {
+                return $.inArray(el, array1) < 0
+            }));;
+        }
 
         function createAddPopup(args) {
             // hide delete button inside add popup
@@ -238,6 +282,9 @@
                         text: 'Add',
                         keyCode: 'enter',
                         handler: function() {
+                            var foremans_staff = staff.filter(x => x.id == tempShift.resource);
+                            let difference = array_diff(tempShift.staff, foremans_staff[0].staff_key.map(String));
+                            tempShift.color = difference.length > 0 ? "red" : "blue";
                             calendar.updateEvent(tempShift);
                             setTimeout(function() {
                                 tempShift.id = "";
@@ -250,6 +297,7 @@
                     }
                 ]
             });
+
             $("#project-details").html("")
             $(".search-project").show();
             popup.open();
@@ -294,8 +342,10 @@
                                 color: resource.color,
                                 slot: slot.id,
                             }
+                            var foremans_staff = staff.filter(x => x.id == tempShift.resource);
+                            let difference = array_diff(tempShift.staff, foremans_staff[0].staff_key.map(String));
+                            data.color = difference.length > 0 ? "red" : "blue";
                             calendar.updateEvent(data);
-                            console.log(data);
                             setTimeout(function() {
                                 saveProject(data);
                             }, 100);
@@ -325,7 +375,7 @@
                     type: 'week',
                     eventList: true,
                     startDay: now.getDay(),
-                    endDay: now.getDay()-1
+                    endDay: now.getDay() - 1
                 }
             },
             data: shifts,
@@ -353,10 +403,9 @@
 
                 setTimeout(function() {
                     saveProject(args.event);
-                }, 300);
+                }, 500);
             },
             onEventCreate: function(args, inst) {
-                console.log("test");
                 $name.val('');
                 $notes.val('');
                 $staff.find("option").prop("selected", false);
@@ -375,8 +424,13 @@
                 }
             },
             renderResource: function(resource) {
-                return '<div class="employee-shifts-cont">' +
-                    '<div class="employee-shifts-name">' + resource.name + '<div>'+
+                var hidden_html = '';
+                resource.staff_name.forEach(function(item) {
+                    hidden_html += '<button class="foreman-pill">' + item + '</button>';
+                });
+                return '<div class="employee-shifts-cont links">' +
+                    '<div class="employee-shifts-name">' + resource.name + '<div>' +
+                    '<div class="hidden_staff" style="display:none">' + hidden_html + '</div>' +
                     '</div>';
             },
         }).mobiscroll('getInst');
@@ -397,6 +451,8 @@
                 xlarge: {
                     display: 'center',
                     layout: 'fixed',
+                    height:850,
+                    maxHeight:950,
                     width: 850,
                     closeOnOverlayTap: false,
                     fullScreen: false,
@@ -465,8 +521,21 @@
     });
 
     function saveProject(data) {
-        data.start = data.start.toISOString();
-        data.end = data.end.toISOString();
+        const padL = (nr, len = 2, chr = `0`) => `${nr}`.padStart(2, chr);
+        var dt = new Date(data.start);
+        data.start = `${dt.getFullYear()}-${
+    padL(dt.getMonth()+1)}-${
+    padL(dt.getDate())}T${
+    padL(dt.getHours())}:${
+    padL(dt.getMinutes())}`
+        var dt = new Date(data.end);
+        data.end = `${dt.getFullYear()}-${
+    padL(dt.getMonth()+1)}-${
+    padL(dt.getDate())}T${
+    padL(dt.getHours())}:${
+    padL(dt.getMinutes())}`;
+        console.log(new Date(data.start));
+        console.log(new Date(data.end));
         $.ajax({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -519,5 +588,32 @@
             }
         });
     }
+
+    var popup1;
+    setTimeout(function() {
+        popup1 = $('#foreman-staff-modal').mobiscroll().popup({
+            display: 'bubble',
+            anchor: $(".links")[1],
+            buttons: []
+        }).mobiscroll('getInst');
+
+    }, 500)
+
+    $(document).on("mouseenter", '.links', function() {
+        var ind = $(".links").index($(this));
+        var html = $(this).find(".hidden_staff").html();
+        $("#foreman-staff-modal").find("div").html(html);
+        popup1.setOptions({
+            anchor: $(".links")[ind]
+        });
+        popup1.open();
+        return false;
+    });
+
+    $(document).on("mouseleave", '#foreman-staff-modal', function() {
+        console.log("yes")
+        popup1.close();
+        return false;
+    });
 </script>
 @endsection

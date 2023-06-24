@@ -35,7 +35,6 @@ class CalenderController extends Controller
         $projects = Booking::all();
         $staff = Staff::all();
         $schedules = ProjectSchedule::all();
-        $schedules = ProjectSchedule::all();
         $latest_id = ProjectSchedule::latest()->first();
         if ($latest_id) {
             $latest_id = $latest_id->id;
