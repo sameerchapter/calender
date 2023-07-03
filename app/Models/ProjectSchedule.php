@@ -13,4 +13,9 @@ class ProjectSchedule extends Model
         'staff_id' => 'array'
     ];
 
+    public function foreman()
+    {
+        $newResource = clone $this;
+        return $newResource->setConnection('webapp')->belongsTo('App\Models\User','foreman_id');
+    }
 }

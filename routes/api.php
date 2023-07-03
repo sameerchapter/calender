@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/auth/login', [App\Http\Controllers\Api\AuthController::class, 'loginUser']);
+Route::post('/auth/login', [App\Http\Controllers\Api\ApiController::class, 'loginUser']);
+Route::post('/auth/event-data', [App\Http\Controllers\Api\ApiController::class, 'eventData']);
 
 
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
