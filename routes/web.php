@@ -48,6 +48,8 @@ Route::group(['middleware' => ['auth:app,staff']], function() {
     Route::post('/update-staff', [App\Http\Controllers\StaffController::class, 'update_staff'])->name('staff.update');
     Route::get('/assign-team', [App\Http\Controllers\StaffController::class, 'assign_team'])->name('team.assign');
     Route::post('/save-team', [App\Http\Controllers\StaffController::class, 'save_team'])->name('team.save');
+    Route::get('/send-notification', [App\Http\Controllers\StaffController::class, 'notification'])->name('notification');
+    Route::post('/send-notification', [App\Http\Controllers\StaffController::class, 'send_notification'])->name('send.notification');
 
   });
     
