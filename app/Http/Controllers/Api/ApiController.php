@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Staff;
 use App\Models\Booking;
+use App\Models\DeviceToken;
 use DB;
 use App\Models\ProjectSchedule;
 use Illuminate\Support\Facades\Auth;
@@ -133,18 +134,25 @@ class ApiController extends Controller
             $data['floor_area'] = !empty($booking->floor_area) ? $booking->floor_area : "N/A";
             $data['booking_notes'] = !empty($booking->notes) ? $booking->notes : "N/A";
             $data['notes'] = !empty($schedule->bcn) ? $schedule->notes : "N/A";
-            $data['staff_assigned'] = implode(" • ",Staff::whereIn('id',$schedule->staff_id)->get()->pluck('name')->toArray());
+            $data['staff_assigned'] = implode(" • ", Staff::whereIn('id', $schedule->staff_id)->get()->pluck('name')->toArray());
             $data['foreman_assigned'] = $schedule->foreman->name;
- 
+
             return response()->json([
                 'status' => true,
                 'data' => $data
-            ], 200,[], JSON_UNESCAPED_UNICODE);
+            ], 200, [], JSON_UNESCAPED_UNICODE);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
             ], 500);
         }
+    }
+
+    public function saveToken(Request $request)
+    {
+        $matchThese = ['user_id' => $request->get('id'), 'model' => $request->get('model')];
+        DeviceToken::updateOrCreate($matchThese, ['token' => $request->get('token')]);
+        return true;
     }
 }
