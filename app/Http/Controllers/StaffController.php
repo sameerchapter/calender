@@ -76,14 +76,14 @@ class StaffController extends Controller
         return true;
     }
 
-    public function send_notification()
+    public function send_notification(Request $request)
     {
         $tokens = DeviceToken::all();
         foreach ($tokens as $token) {
             $payload = array(
                 'to' => $token->token,
                 'sound' => 'default',
-                'body' => 'hello',
+                'body' => $request->get('notification'),
             );
 
             $curl = curl_init();
