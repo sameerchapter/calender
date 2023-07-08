@@ -50,7 +50,7 @@ class NotificationCron extends Command
       $details['to'] = $booking->foreman->email;
       $details['subject'] = "Boxit Foundation's Reminder";
       $details['body'] = $msg;
-      print_r(dispatch(new BookingEmailJob($details)));
+      dispatch(new BookingEmailJob($details));
       //send sms
       if (!empty($booking->foreman->contact)) {
         try {
