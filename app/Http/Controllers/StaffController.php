@@ -34,6 +34,7 @@ class StaffController extends Controller
         $staff = new Staff();
         $staff->name = $request->name;
         $staff->password = bcrypt($request->password);
+        $staff->contact = $request->contact;
         $staff->email = $request->email;
         $staff->save();
         $staff = $staff->fresh();
@@ -50,6 +51,7 @@ class StaffController extends Controller
         if (!empty($request->password)) {
             $staff->password = bcrypt($request->password);
         }
+        $staff->contact = $request->contact;
         $staff->email = $request->email;
         $staff->save();
 

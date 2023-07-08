@@ -87,7 +87,10 @@
             <label for="email" class="col-form-label">Email:</label>
             <input type="email" name="email" class="form-control" id="email">
           </div>
-          
+          <div class="form-group">
+            <label for="contact" class="col-form-label">Contact:</label>
+            <input type="text" name="contact" class="form-control" id="contact">
+          </div>
           <div class="form-group">
             <label for="password" class="col-form-label">Password:</label>
             <input type="password" name="new_password" autocomplete="off" class="form-control" id="password">
@@ -142,7 +145,7 @@
         $("#modal_staff_id").text(data.id);
         $("#name").val(data.name);
         $("#email").val(data.email);
-
+        $("#contact").val(data.contact);
         $("#password").val("");
        
 
@@ -159,9 +162,9 @@
     $("#modal_staff_id").text("");
     $("#modal_title").html("Add");
     $("#email").attr('readonly', false);
-    $("#staff_type").attr('readonly', false);
     $("#name").val("");
     $("#email").val("");
+    $("#contact").val("");
     $("#password").val("");
     $("#staff_form").modal('show');
   });
@@ -178,6 +181,7 @@
     $(document).on('click', "#submit_staff", function() {
       var name = $("#name").val();
       var email = $("#email").val();
+      var contact = $("#contact").val();
       var password = $("#password").val();
       if(name=="")
       {
@@ -196,18 +200,20 @@
         data: {
           name: name,
           email: email,
+          contact: contact,
           password: password,
         },
         success: function(data) {
           $("#staff_form").modal('hide');
           $("#name").val("");
           $("#email").val("");
+          $("#contact").val("");
           $("#password").val("");
           Toast.fire({
             icon: 'success',
             title: 'Staff has been saved successfully'
           }).then((res) => {
-            window.location.href();
+            window.location.reload();
           });
           refreshtable();
 
@@ -218,6 +224,7 @@
       console.log("yes");
       var name = $("#name").val();
       var email = $("#email").val();
+      var contact = $("#contact").val();
       var password = $("#password").val();
       var id = $("#modal_staff_id").text();
 
@@ -230,19 +237,19 @@
           email: email,
           contact: contact,
           password: password,
-          staff_type: staff_type,
         },
         success: function(data) {
           $("#staff_form").modal('hide');
           $("#name").val("");
           $("#email").val("");
+          $("#contact").val("");
           $("#password").val("");
           $("#modal_staff_id").text("");
           Toast.fire({
             icon: 'success',
             title: 'Staff has been updated successfully'
           }).then((res) => {
-            window.location.href();
+            window.location.reload();
           });
           refreshtable();
         }
