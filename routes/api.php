@@ -15,9 +15,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/auth/login', [App\Http\Controllers\Api\ApiController::class, 'loginUser']);
-Route::post('/auth/event-data', [App\Http\Controllers\Api\ApiController::class, 'eventData']);
-Route::post('/auth/booking-data', [App\Http\Controllers\Api\ApiController::class, 'bookingData']);
-Route::post('/auth/save-token', [App\Http\Controllers\Api\ApiController::class, 'saveToken']);
+Route::post('/event-data', [App\Http\Controllers\Api\ApiController::class, 'eventData']);
+Route::post('/booking-data', [App\Http\Controllers\Api\ApiController::class, 'bookingData']);
+Route::post('/save-token', [App\Http\Controllers\Api\ApiController::class, 'saveToken']);
+Route::post('/notifications', [App\Http\Controllers\ApiController::class, 'notificationData']);
 
 
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
