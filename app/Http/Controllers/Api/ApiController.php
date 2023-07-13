@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Staff;
 use App\Models\Booking;
 use App\Models\DeviceToken;
+use App\Models\Notification;
 use DB;
 use App\Models\ProjectSchedule;
 use Illuminate\Support\Facades\Auth;
@@ -93,6 +94,39 @@ class ApiController extends Controller
             } else {
                 $data = [];
             }
+
+            return response()->json([
+                'status' => true,
+                'data' => $data
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function notificationData(Request $request)
+    {
+        try {
+            $validateUser = Validator::make(
+                $request->all(),
+                [
+                    'user_id' => 'required',
+                    'model' => 'required',
+                ]
+            );
+
+            if ($validateUser->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => $validateUser->errors()
+                ], 401);
+            }
+            
+            $data=Notification::where(['user_id'=>$request->get('user_id'),'model'=>$request->get('model')])->get();
 
             return response()->json([
                 'status' => true,

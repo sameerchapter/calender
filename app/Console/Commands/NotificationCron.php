@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\ProjectSchedule;
 use App\Models\Staff;
+use App\Models\Notification;
 use Twilio\Rest\Client;
 use App\Jobs\BookingEmailJob;
 use App\Models\DeviceToken;
@@ -68,6 +69,7 @@ class NotificationCron extends Command
       }
       //send app notification 
       $tokens = DeviceToken::where(array('user_id' => $booking->foreman_id, 'model' => 'user'))->get();
+      Notification::create(['user_id' => $booking->foreman_id, 'model' => 'user','notification'=>$msg]);
       foreach ($tokens as $token)
         $this->notify($token, $msg);
 
@@ -96,8 +98,10 @@ class NotificationCron extends Command
           }
         }
         $tokens = DeviceToken::where(array('user_id' => $staff, 'model' => 'staff'))->get();
+        Notification::create(['user_id' => $staff, 'model' => 'staff','notification'=>$msg]);
         foreach ($tokens as $token)
           $this->notify($token, $msg);
+
       }
     }
   }

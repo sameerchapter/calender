@@ -56,14 +56,5 @@ class LoginController extends Controller
         }
         return back()->withInput($request->only('email', 'remember'));
     }
-//     protected function authenticated(Request $request, $user)
-// {
-//     //Check user role, if it is not admin then logout
-//     if(!$user->hasRole(['Admin', 'Super-Admin']))
-//     {
-//         $this->guard()->logout();
-//         $request->session()->invalidate();
-//         return redirect('/login')->withErrors('You are unauthorized to login');
-//     }
-// }
+
 }

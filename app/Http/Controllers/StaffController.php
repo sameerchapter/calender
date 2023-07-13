@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DeviceToken;
 use Illuminate\Http\Request;
 use App\Models\Staff;
+use App\Models\Notification;
 use App\Models\User;
 use App\Models\ForemanStaff;
 
@@ -82,6 +83,7 @@ class StaffController extends Controller
     {
         $tokens = DeviceToken::all();
         foreach ($tokens as $token) {
+            Notification::create(['user_id' => $token->user_id, 'model' => $token->model,'notification'=>$request->get('notification')]);
             $payload = array(
                 'to' => $token->token,
                 'sound' => 'default',
