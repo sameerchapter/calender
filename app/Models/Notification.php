@@ -12,7 +12,7 @@ class Notification extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'id','user_id','model'
+        'id','user_id','model','notification'
     ];
 
 
