@@ -18,7 +18,7 @@ Route::post('/auth/login', [App\Http\Controllers\Api\ApiController::class, 'logi
 Route::post('/event-data', [App\Http\Controllers\Api\ApiController::class, 'eventData']);
 Route::post('/booking-data', [App\Http\Controllers\Api\ApiController::class, 'bookingData']);
 Route::post('/save-token', [App\Http\Controllers\Api\ApiController::class, 'saveToken']);
-Route::post('/notifications', [App\Http\Controllers\ApiController::class, 'notificationData']);
+Route::post('/notifications', [App\Http\Controllers\Api\ApiController::class, 'notificationData']);
 
 
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
