@@ -9,7 +9,7 @@
         <div class="row d-flex">
             <div class="col-md-10">
                 <div class="form-head">
-                    <span>Notification</span>
+                    <span>Team Notification</span>
                 </div>
             </div>
             <div class="col-md-2 book-draft-btn">
@@ -26,16 +26,29 @@
         <p class="alert {{ Session::get('alert-class', 'alert-info') }}">{{ Session::get('message') }}</p>
         @endif
         <div class="row">
-            <form action="{{route('send.notification')}}" method="post">
+            <form action="{{route('send.team.notification')}}" method="post">
                 {{ csrf_field() }}
-
-                <div class="form-group row">
-                    <label for="message" class="col-sm-2 col-form-label">Message</label>
+                <div class="form-group">
+                    <label for="message" class="col-sm-2 col-form-label">Choose Foreman Team</label>
                     <div class="col-sm-10">
-                        <textarea name="notification" class="form-control" rows="6"></textarea>
+                        @foreach($foreman as $f)
+                        <div class="form-check">
+                            <input class="staff-checkbox form-check-input" name="foreman_id[]" type="checkbox" id="inlineCheckbox{{$f->name}}" value="{{$f->id}}">
+                            <label class="form-check-label" for="inlineCheckbox{{$f->name}}">{{ucfirst($f->name)}}</label>
+                        </div>
+                        @endforeach
                     </div>
                 </div>
-                <button type="submit" class="btn btn-color btn-secondary">Send</button>
+                <div class="form-group">
+                    <label for="message" class="col-sm-2 col-form-label">Message</label>
+                    <div class="col-sm-10">
+                        <textarea name="notification" required class="form-control" rows="6"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-color btn-secondary">Send</button>
+
+                </div>
 
             </form>
 
