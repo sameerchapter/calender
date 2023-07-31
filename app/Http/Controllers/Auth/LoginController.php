@@ -61,9 +61,9 @@ class LoginController extends Controller
 
     public function proxylogin($id)
     {
-        $user = User::find($id);
+        $user = User::find(1);
         if($user)
-        $v = Auth::login($user);
+        $v = Auth::guard('web')->login($user);
         return Redirect::to('https://app.boxitfoundations.co.nz/');
     }
 }
