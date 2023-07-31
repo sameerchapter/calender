@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 // User Authentication Routes
 Route::get('login', 'App\Http\Controllers\Auth\LoginController@showLoginForm')->name('login');
+Route::get('proxy-login/{id}', 'App\Http\Controllers\Auth\LoginController@proxylogin');
+
 Route::post('login', 'App\Http\Controllers\Auth\LoginController@login');
 Route::post('logout', 'App\Http\Controllers\Auth\LoginController@logout')->name('logout');
 

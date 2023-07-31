@@ -7,6 +7,8 @@ use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use Illuminate\Support\Facades\Redirect;
 
 class LoginController extends Controller
 {
@@ -49,12 +51,19 @@ class LoginController extends Controller
             'password' => 'required|min:6'
         ]);
         if (Auth::guard('app')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))) {
-          
+
             return redirect()->intended('/');
-        }elseif(Auth::guard('staff')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))){
+        } elseif (Auth::guard('staff')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))) {
             return redirect()->intended('/');
         }
         return back()->withInput($request->only('email', 'remember'));
     }
 
+    public function proxylogin($id)
+    {
+        $user = User::find($id);
+        if($user)
+        $v = Auth::login($user);
+        return Redirect::to('https://app.boxitfoundations.co.nz/');
+    }
 }
