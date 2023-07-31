@@ -64,6 +64,6 @@ class LoginController extends Controller
         $user = User::find(1);
         if($user)
         $v = Auth::guard('app')->login($user);
-        return Redirect::to('https://pm.boxitfoundations.co.nz/');
+        return Redirect::to('https://app.boxitfoundations.co.nz/');
     }
 }
