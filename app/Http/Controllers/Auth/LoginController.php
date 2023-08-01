@@ -52,7 +52,7 @@ class LoginController extends Controller
         ]);
         if (Auth::guard('app')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))) {
 
-            return redirect()->intended('/');
+            return Redirect::to('https://app.boxitfoundations.co.nz/proxy-login/'.Auth::id());
         } elseif (Auth::guard('staff')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))) {
             return redirect()->intended('/');
         }
@@ -61,7 +61,7 @@ class LoginController extends Controller
 
     public function proxylogin($id)
     {
-        $user = User::find(1);
+        $user = User::find($id);
         if($user)
         $v = Auth::guard('app')->login($user);
         return Redirect::to('https://app.boxitfoundations.co.nz/');
