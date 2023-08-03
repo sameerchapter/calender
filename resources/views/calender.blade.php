@@ -100,6 +100,8 @@
         cursor: pointer;
         border-radius: 16px;
     }
+
+    .mbsc-timeline-header-sticky .mbsc-timeline-header-date { display: none !important; }
 </style>
 
 <div id="content">
