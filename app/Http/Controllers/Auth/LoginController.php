@@ -51,8 +51,7 @@ class LoginController extends Controller
             'password' => 'required|min:6'
         ]);
         if (Auth::guard('app')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))) {
-
-            return Redirect::to('https://app.boxitfoundations.co.nz/proxy-login/'.Auth::id());
+            return Redirect::to('https://app.boxitfoundations.co.nz/proxy-login/'.Auth::guard('app')->id());
         } elseif (Auth::guard('staff')->attempt(['email' => $request->email, 'password' => $request->password], $request->get('remember'))) {
             return redirect()->intended('/');
         }
