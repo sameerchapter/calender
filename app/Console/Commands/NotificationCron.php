@@ -102,7 +102,7 @@ class NotificationCron extends Command
                 'body' => $output_string
               )
             );
-            echo "msgsent"."<br>";
+            \Log::info("Message sent!");
           } catch (Exception $e) {
             $e->getMessage();
           }
