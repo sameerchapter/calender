@@ -35,6 +35,7 @@ class NotificationCron extends Command
   public function handle()
   {
     $bookings = ProjectSchedule::whereDate('start', '=', \Carbon\Carbon::tomorrow())->get();
+   // dd($bookings);
     $account_sid = \config('const.twilio_sid');;
     $auth_token = \config('const.twilio_token');
     $twilio_number = "+16209129397";
@@ -44,6 +45,10 @@ class NotificationCron extends Command
       $address = $booking->project_name;
       $slot = $booking->slot == 1 ? 'AM' : 'PM';
       $foreman_name = $booking->foreman?->name;
+      if(empty($booking->staff_id))
+      {
+        $booking->staff_id=[];
+      }
       $staff_names = implode(", ", Staff::whereIn('id', $booking->staff_id)->get()->pluck('name')->toArray());;
       $custom = !empty($staff_names) ? "with $staff_names" : "";
       $msg = "Hi $foreman_name,\nThe location to report tomorrow is $address in the $slot $custom";
@@ -52,6 +57,8 @@ class NotificationCron extends Command
       $details['subject'] = "Boxit Foundation's Reminder";
       $details['body'] = $msg;
       dispatch(new BookingEmailJob($details));
+      \Log::info("Mail sent!");
+
       //send sms
       if (!empty($booking->foreman->contact)) {
         try {
@@ -63,6 +70,8 @@ class NotificationCron extends Command
               'body' => $output_string
             )
           );
+          \Log::info("Message sent!");
+
         } catch (Exception $e) {
           $e->getMessage();
         }
@@ -93,6 +102,7 @@ class NotificationCron extends Command
                 'body' => $output_string
               )
             );
+            echo "msgsent"."<br>";
           } catch (Exception $e) {
             $e->getMessage();
           }
