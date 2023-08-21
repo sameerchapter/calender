@@ -196,7 +196,7 @@ class CalenderController extends Controller
         return $html;
     }
 
-    public function handle()
+    public function check_cron()
   {
     $bookings = ProjectSchedule::whereDate('start', '=', \Carbon\Carbon::tomorrow())->get();
    // dd($bookings);
