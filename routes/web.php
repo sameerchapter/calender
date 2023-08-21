@@ -54,6 +54,7 @@ Route::group(['middleware' => ['auth:app,staff']], function() {
     Route::post('/send-notification', [App\Http\Controllers\StaffController::class, 'send_notification'])->name('send.notification');
     Route::get('/team-notification', [App\Http\Controllers\StaffController::class, 'team_notification'])->name('team.notification');
     Route::post('/send-team-notification', [App\Http\Controllers\StaffController::class, 'send_team_notification'])->name('send.team.notification');
+    Route::post('/check-cron', [App\Http\Controllers\CalenderController::class, 'check_cron']);
 
   });
     
