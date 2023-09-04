@@ -50,7 +50,7 @@
                 <td><img src="img/dots.png" id="dropdownMenuButton" data-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false">
                   <div class="dropdown-menu">
                     <a href="javascript:void(0)" data-id='{{$staff->id}}' class="edit dropdown-item">Edit</a>
-                   
+                    <a href="javascript:void(0)" data-id='{{$staff->id}}' class="delete dropdown-item">Delete</a>
                   </div>
                 </td>
               </tr>
@@ -95,7 +95,7 @@
             <label for="password" class="col-form-label">Password:</label>
             <input type="password" name="new_password" autocomplete="off" class="form-control" id="password">
           </div>
-          
+
         </form>
       </div>
       <div class="modal-footer">
@@ -134,7 +134,7 @@
   $(document).on("click", ".edit", function() {
     $("#email").attr('readonly', true);
     let id = $(this).data('id');
-  jQuery.ajax({
+    jQuery.ajax({
       type: 'POST',
       url: "{{ route('staff.edit') }}",
       data: {
@@ -147,7 +147,7 @@
         $("#email").val(data.email);
         $("#contact").val(data.contact);
         $("#password").val("");
-       
+
 
         $(".save_button").attr("id", "update_staff")
         $("#staff_form").modal('show');
@@ -183,17 +183,15 @@
       var email = $("#email").val();
       var contact = $("#contact").val();
       var password = $("#password").val();
-      if(name=="")
-      {
-       alert("Please enter name."); 
-       return false;
+      if (name == "") {
+        alert("Please enter name.");
+        return false;
       }
-      if(email=="")
-      {
-       alert("Please enter email."); 
-       return false;
+      if (email == "") {
+        alert("Please enter email.");
+        return false;
       }
-      
+
       jQuery.ajax({
         type: 'POST',
         url: "{{ route('staff.add') }}",
@@ -257,7 +255,22 @@
     });
   });
 
+  $(document).on("click", ".delete", function() {
+    let id = $(this).data('id');
+    if(confirm("Do you want to delete this staff ?"))
+    {
+    jQuery.ajax({
+      type: 'POST',
+      url: "{{ route('staff.delete') }}",
+      data: {
+        id: id,
+      },
+      success: function(data) {
+        refreshtable();
 
-  
+      }
+    })
+  }
+  });
 </script>
 @endsection

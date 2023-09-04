@@ -48,6 +48,7 @@ Route::group(['middleware' => ['auth:app,staff']], function() {
     Route::post('/add-staff', [App\Http\Controllers\StaffController::class, 'add_staff'])->name('staff.add');
     Route::post('/edit-staff', [App\Http\Controllers\StaffController::class, 'edit_staff'])->name('staff.edit');
     Route::post('/update-staff', [App\Http\Controllers\StaffController::class, 'update_staff'])->name('staff.update');
+    Route::post('/delete-staff', [App\Http\Controllers\StaffController::class, 'delete_staff'])->name('staff.delete');
     Route::get('/assign-team', [App\Http\Controllers\StaffController::class, 'assign_team'])->name('team.assign');
     Route::post('/save-team', [App\Http\Controllers\StaffController::class, 'save_team'])->name('team.save');
     Route::get('/send-notification', [App\Http\Controllers\StaffController::class, 'notification'])->name('notification');

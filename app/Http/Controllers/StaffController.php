@@ -8,6 +8,7 @@ use App\Models\Staff;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\ForemanStaff;
+use App\Models\ProjectSchedule;
 use Twilio\Rest\Client;
 use App\Jobs\BookingEmailJob;
 use Illuminate\Support\Facades\Session;
@@ -63,6 +64,27 @@ class StaffController extends Controller
     $staff->save();
 
     return  true;
+  }
+   
+  public function delete_staff(Request $request)
+  {
+    $id=$request->get('id');
+    ForemanStaff::where('staff_id',$id)->delete();
+    $schedules=ProjectSchedule::whereJsonContains('staff_id',$id)->get();
+    foreach($schedules as $res)
+    {
+      $staff = $res->staff_id;
+
+      // find request()->img position inside imgs array
+      $position = array_search(request()->id, $staff);
+ 
+      // delete request()->img
+      unset($staff[$position]);
+ 
+      $res->staff_id = array_values($staff);
+      $res->save();
+    }
+     Staff::find($id)->delete();
   }
 
   public function assign_team()
