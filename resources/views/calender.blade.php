@@ -206,7 +206,7 @@
                     start: "<?php echo $res->start; ?>",
                     end: "<?php echo $res->end; ?>",
                     title: "<?php echo $res->project_name; ?>",
-                    notes: "<?php echo json_encode($res->notes); ?>",
+                    notes: <?php echo json_encode($res->notes); ?>,
                     resource: "<?php echo $res->foreman_id; ?>",
                     staff_id: <?php print(json_encode($res->staff_id)); ?>,
                     slot: <?php echo $res->slot; ?>,
