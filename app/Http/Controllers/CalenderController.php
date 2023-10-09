@@ -79,7 +79,9 @@ class CalenderController extends Controller
    ->orWhereBetween('to_date',array($from_date,$to_date))->get();
   if(count($staff_leaves)>0)
     {
-       return json_encode(array("success"=>"true","msg"=>$staff_leaves[0]->user_name." is on leave for ". $from_date==$to_date?$from_date:($staff_leaves[0]->$from_date.' to '.$staff_leaves[0]->$to_date)));
+      $msg= ucfirst($staff_leaves[0]->user_name)." is on leave for ". ($from_date==$to_date?$from_date:($staff_leaves[0]->from_date.' to '.$staff_leaves[0]->to_date));
+
+       return json_encode(array("success"=>"true","msg"=>$msg));
     }
     return true;
   } 
