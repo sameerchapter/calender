@@ -101,7 +101,9 @@
         border-radius: 16px;
     }
 
-    .mbsc-timeline-header-sticky .mbsc-timeline-header-date { display: none !important; }
+    .mbsc-timeline-header-sticky .mbsc-timeline-header-date {
+        display: none !important;
+    }
 </style>
 
 <div id="content">
@@ -111,6 +113,12 @@
                 <div class="col-md-12">
                     <div class="form-head">
                         <span id="popl">Projects Calendar</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-head">
+                        <label>Choose specific date for calender:</label>
+                        <input type="date" onchange="moveCalender(this);" class="form-control" id="specific_date">
                     </div>
                 </div>
             </div>
@@ -136,10 +144,24 @@
                                 </label>
                                 <select id="employee-project-name">
                                     <option>Search Project</option>
+                                    @foreach($drafts as $draft)
+                                    <option value="{{$draft->id}}_1">{{$draft->address}}</option>
+                                    @endforeach
                                     @foreach($projects as $project)
-                                    <option value="{{$project->id}}">{{$project->address}}</option>
+                                    <option value="{{$project->id}}_2">{{$project->address}}</option>
                                     @endforeach
                                 </select>
+                            </div>
+                            <div class="mbsc-form-group">
+                                <label for="employee-shifts-start">
+                                    From date
+                                    <input mbsc-input data-dropdown="true" id="employee-shifts-start" />
+                                </label>
+                                <label for="employee-shifts-end">
+                                    To date
+                                    <input mbsc-input data-dropdown="true" id="employee-shifts-end" />
+                                </label>
+                                <div id="demo-employee-shifts-date"></div>
                             </div>
                             <div class="mbsc-form-group">
                                 <label>
@@ -169,16 +191,29 @@
     </div>
 </div>
 <script>
+    var calendar;
+
+    function moveCalender(ele) {
+        calendar.navigate($(ele).val());
+
+    }
+
+
     mobiscroll.setOptions({
         theme: 'ios',
         themeVariant: 'light',
+        clickToCreate: true,
+        dragToCreate: true,
+        dragToMove: true,
+        dragToResize: true,
+        eventDelete: true,
     });
 
     $(function() {
-        var calendar;
         var popup;
         var oldShift;
         var tempShift;
+        var range;
         var deleteShift;
         var formatDate = mobiscroll.util.datetime.formatDate;
         var $notes = $('#employee-project-notes');
@@ -193,7 +228,7 @@
                     staff_name: <?php print(json_encode($res->staff->pluck('name'))); ?>,
                     staff_key: <?php print(json_encode($res->staff->pluck('id'))); ?>,
                     name: "<?php echo ucfirst($res['name']); ?>",
-                    color: '#80cff7',
+                    color: '#80cff7'
                 },
             <?php
             }
@@ -205,6 +240,7 @@
                     id: "<?php echo $res->id; ?>",
                     start: "<?php echo $res->start; ?>",
                     end: "<?php echo $res->end; ?>",
+                    overlap: false,
                     title: "<?php echo $res->project_name; ?>",
                     notes: <?php echo json_encode($res->notes); ?>,
                     resource: "<?php echo $res->foreman_id; ?>",
@@ -284,6 +320,36 @@
                         text: 'Add',
                         keyCode: 'enter',
                         handler: function() {
+                            var msg = "";
+                            $.ajax({
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                },
+                                url: "{{ url('check-leave') }}",
+                                async: false,
+                                data: {
+                                    foreman_id: tempShift.resource,
+                                    staff_id: tempShift.staff,
+                                    from_date:dateFormat(tempShift.start),
+                                    to_date: dateFormat(tempShift.end)
+                                },
+                                type: 'POST',
+                                dataType: 'json',
+                                success: function(result) {
+                                    if (result.success == "true") {
+                                        msg = result.msg;
+                                    }
+                                }
+                            });
+                            if (msg != "") {
+                                mobiscroll.toast({
+                                    duration: 3000,
+                                    message: msg,
+                                    color: 'danger',
+                                    display: 'top'
+                                });
+                                return false;
+                            }
                             var foremans_staff = staff.filter(x => x.id == tempShift.resource);
                             let difference = array_diff(tempShift.staff, foremans_staff[0].staff_key.map(String));
                             tempShift.color = difference.length > 0 ? "red" : "blue";
@@ -302,6 +368,7 @@
 
             $("#project-details").html("")
             $(".search-project").show();
+            range.setVal([tempShift.start, tempShift.end]);
             popup.open();
 
         }
@@ -314,7 +381,7 @@
             var slot = slots.find(function(s) {
                 return s.id === ev.slot
             });
-            var headerText = '<div>' + $name.val() + '</div>';
+            var headerText = '<div>' + ev.title + '</div>';
 
             // show delete button inside edit popup
             $deleteButton.show();
@@ -331,7 +398,36 @@
                         text: 'Save',
                         keyCode: 'enter',
                         handler: function() {
-
+                            var msg = "";
+                            $.ajax({
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                },
+                                url: "{{ url('check-leave') }}",
+                                async: false,
+                                data: {
+                                    foreman_id: resource.id,
+                                    staff_id: tempShift.staff,
+                                    from_date:dateFormat(tempShift.start),
+                                    to_date: dateFormat(tempShift.end)
+                                },
+                                type: 'POST',
+                                dataType: 'json',
+                                success: function(result) {
+                                    if (result.success == "true") {
+                                        msg = result.msg;
+                                    }
+                                }
+                            });
+                            if (msg != "") {
+                                mobiscroll.toast({
+                                    duration: 3000,
+                                    message: msg,
+                                    color: 'danger',
+                                    display: 'top'
+                                });
+                                return false;
+                            }
                             // update event with the new properties on save button click
                             var data = {
                                 id: ev.id,
@@ -344,9 +440,16 @@
                                 color: resource.color,
                                 slot: slot.id,
                             }
+                           
+
+                            if(typeof tempShift.staff !== 'undefined')
+                            {
                             var foremans_staff = staff.filter(x => x.id == tempShift.resource);
                             let difference = array_diff(tempShift.staff, foremans_staff[0].staff_key.map(String));
                             data.color = difference.length > 0 ? "red" : "blue";
+                            }else{
+                                data.color="red";
+                            }
                             calendar.updateEvent(data);
                             setTimeout(function() {
                                 saveProject(data);
@@ -366,23 +469,27 @@
                 staffpicker.setVal(ev.staff_id.map(String));
 
             }
+            range.setVal([ev.start, ev.end]);
             modalData(ev.id);
             $(".search-project").hide();
             popup.open();
         }
         var now = new Date();
+
         calendar = $('#demo-employee-shifts-calendar').mobiscroll().eventcalendar({
+
             view: {
                 timeline: {
                     type: 'week',
-                    eventList: true,
                     startDay: now.getDay(),
-                    endDay: now.getDay() - 1
+                    endDay: now.getDay() - 1,
+
                 }
             },
+            eventOverlap: false,
             data: shifts,
-            dragToCreate: false,
-            dragToResize: false,
+            dragToCreate: true,
+            dragToResize: true,
             dragToMove: true,
             clickToCreate: true,
             resources: staff,
@@ -390,7 +497,6 @@
             slots: slots,
             extendDefaultEvent: function(ev) {
                 var d = ev.start;
-                console.log(d)
                 var start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), ev.slot == 1 ? 7 : 12);
                 var end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), ev.slot == 1 ? 13 : 18);
 
@@ -398,16 +504,59 @@
                     title: "New Project",
                     start: start,
                     end: end,
-                    resource: ev.resource
+                    resource: ev.resource,
                 };
             },
-            onEventDragEnd: function(args, inst) {
-
-                setTimeout(function() {
+         
+            onEventUpdate: function(args, inst){
+                var msg = "";
+                            $.ajax({
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                },
+                                url: "{{ url('check-leave') }}",
+                                async: false,
+                                data: {
+                                    foreman_id: args.event.resource,
+                                    staff_id: args.event.staff,
+                                    from_date:dateFormat(args.event.start),
+                                    to_date: dateFormat(args.event.end)
+                                },
+                                type: 'POST',
+                                dataType: 'json',
+                                success: function(result) {
+                                    if (result.success == "true") {
+                                        msg = result.msg;
+                                    }
+                                }
+                            });
+                            if (msg != "") {
+                                mobiscroll.toast({
+                                    duration: 3000,
+                                    message: msg,
+                                    color: 'danger',
+                                    display: 'top'
+                                });
+                                return false;
+                            }
+               setTimeout(function() {
                     saveProject(args.event);
                 }, 500);
             },
-            onEventCreate: function(args, inst) {
+            onEventCreate: function(args) {
+                var samedayEvent = calendar.getEvents(args.event.start);
+                if (samedayEvent.length > 0) {
+                    if (args.event.resource == samedayEvent[0].resource) {
+                        mobiscroll.toast({
+                            duration: 2000,
+                            message: 'Already assigned to project !',
+                            color: 'warning',
+                            display: 'top'
+                        });
+                        return false;
+                    }
+                }
+
                 $name.val('');
                 $notes.val('');
                 $staff.find("option").prop("selected", false);
@@ -417,7 +566,7 @@
                     createAddPopup(args);
                 }, 100);
             },
-            onEventClick: function(args, inst) {
+            onEventClick: function(args, ) {
                 oldShift = $.extend({}, args.event);
                 tempShift = args.event;
 
@@ -437,6 +586,24 @@
             },
         }).mobiscroll('getInst');
 
+        range = $('#demo-employee-shifts-date').mobiscroll().datepicker({
+            controls: ['date'],
+            select: 'range',
+            display: 'anchored',
+            showRangeLabels: false,
+            touchUi: false,
+            startInput: '#employee-shifts-start',
+            endInput: '#employee-shifts-end',
+            timeWheels: '|Y-m-d h:mm A|',
+            onChange: function(args) {
+                var date = args.value;
+
+                // update shift's start/end date
+                tempShift.start = date[0];
+                tempShift.end = date[1] ? date[1] : date[0];
+            }
+        }).mobiscroll('getInst');
+
         popup = $('#demo-employee-shifts-popup').mobiscroll().popup({
             display: 'bottom',
             contentPadding: false,
@@ -453,8 +620,8 @@
                 xlarge: {
                     display: 'center',
                     layout: 'fixed',
-                    height:850,
-                    maxHeight:950,
+                    height: 850,
+                    maxHeight: 950,
                     width: 850,
                     closeOnOverlayTap: false,
                     fullScreen: false,
@@ -521,23 +688,22 @@
             });
         });
     });
-
-    function saveProject(data) {
+    
+    function dateFormat(d)
+    {
         const padL = (nr, len = 2, chr = `0`) => `${nr}`.padStart(2, chr);
-        var dt = new Date(data.start);
-        data.start = `${dt.getFullYear()}-${
+        var dt = new Date(d);
+        var new_date = `${dt.getFullYear()}-${
     padL(dt.getMonth()+1)}-${
     padL(dt.getDate())}T${
     padL(dt.getHours())}:${
     padL(dt.getMinutes())}`
-        var dt = new Date(data.end);
-        data.end = `${dt.getFullYear()}-${
-    padL(dt.getMonth()+1)}-${
-    padL(dt.getDate())}T${
-    padL(dt.getHours())}:${
-    padL(dt.getMinutes())}`;
-        console.log(new Date(data.start));
-        console.log(new Date(data.end));
+        return new_date;
+    }
+    function saveProject(data) {
+        data.start = dateFormat(data.start);
+        data.end = dateFormat(data.end);
+
         $.ajax({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

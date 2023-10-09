@@ -5,106 +5,157 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Booking;
+use App\Models\Draft;
 use App\Models\ProjectSchedule;
 use App\Models\Staff;
 use App\Models\Notification;
 use Twilio\Rest\Client;
 use App\Jobs\BookingEmailJob;
 use App\Models\DeviceToken;
+use App\Models\Leaves;
 use Exception;
+use DB;
 use Illuminate\Support\Facades\Auth;
 
 class CalenderController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
+  /**
+   * Create a new controller instance.
+   *
+   * @return void
+   */
+  public function __construct()
+  {
 
-        $this->middleware('auth:app,staff');
+    $this->middleware('auth:app,staff');
+  }
+
+  /**
+   * Show the application dashboard.
+   *
+   * @return \Illuminate\Contracts\Support\Renderable
+   */
+  public function index()
+  {
+    $foreman = User::whereHas("roles", function ($q) {
+      $q->where("name", "Foreman");
+    })->whereNotIn('name', ['NA', 'N/A'])->get();
+    $projects = Booking::all();
+    $drafts = Draft::all();
+    $staff = Staff::all();
+    $schedules = ProjectSchedule::all();
+    $latest_id = ProjectSchedule::latest()->first();
+    if ($latest_id) {
+      $latest_id = $latest_id->id;
+    } else {
+      $latest_id = 0;
     }
+    return view('calender', compact('drafts', 'foreman', 'projects', 'schedules', 'staff', 'latest_id'));
+  }
+   
+  public function checkLeave(Request $request)
+  {
+      $from_date =  date('Y-m-d', strtotime($request->get('from_date')));
+      $to_date =  date('Y-m-d', strtotime($request->get('to_date')));
+      $foreman_id = $request->get('foreman_id');
+      $staff_ids  =$request->get('staff_id');
+      //DB::enableQueryLog();
+     $foreman_leaves = Leaves::where([['user_id',$foreman_id],['user_type',1]])->where([['from_date','<=',$from_date],['to_date','>=',$to_date]])
+     ->orwhereBetween('from_date',array($from_date,$to_date))
+    ->orWhereBetween('to_date',array($from_date,$to_date))->get();
+    //dd(DB::getQueryLog());
 
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function index()
+    if(count($foreman_leaves)>0)
     {
-        $foreman = User::whereHas("roles", function ($q) {
-            $q->where("name", "Foreman");
-        })->whereNotIn('name', ['NA', 'N/A'])->get();
-        $projects = Booking::all();
-        $staff = Staff::all();
-        $schedules = ProjectSchedule::all();
-        $latest_id = ProjectSchedule::latest()->first();
-        if ($latest_id) {
-            $latest_id = $latest_id->id;
-        } else {
-            $latest_id = 0;
-        }
-        return view('calender', compact('foreman', 'projects', 'schedules', 'staff', 'latest_id'));
+      $msg= ucfirst($foreman_leaves[0]->user_name)." is on leave for ". ($from_date==$to_date?$from_date:($foreman_leaves[0]->from_date.' to '.$foreman_leaves[0]->to_date));
+       return json_encode(array("success"=>"true","msg"=>$msg));
     }
-
-    public function saveProjectSchedule(Request $request)
+    if(empty($staff_ids))
     {
-        if (!empty($request->get('id'))) {
-            $schedule = ProjectSchedule::find($request->get('id'));
-        } else {
-            $schedule = new ProjectSchedule;
-        }
-        $booking = Booking::where('address', $request->get('title'))->first();
-        if (!empty($booking)) {
-            $schedule->event_id = $booking->id;
-        }
-        $schedule->project_name = $request->get('title');
-        $schedule->slot = $request->get('slot');
-        $schedule->foreman_id = $request->get('resource');
-        $schedule->notes = $request->get('notes');
-        $schedule->start = $request->get('start');
-        $schedule->staff_id = $request->get('staff');
-        $schedule->end = $request->get('end');
-        $schedule->save();
-        return true;
+      return true;
     }
-
-    public function getStaff(Request $request)
+    $staff_leaves = Leaves::whereIn('user_id',$staff_ids)->where([['user_type',2]])->where([['from_date','<=',$from_date],['to_date','>=',$to_date]])
+    ->orwhereBetween('from_date',array($from_date,$to_date))
+   ->orWhereBetween('to_date',array($from_date,$to_date))->get();
+  if(count($staff_leaves)>0)
     {
-        $staff = User::with('staff')->find($request->get('foreman_id'))->staff->pluck('id');
-        return $staff;
+       return json_encode(array("success"=>"true","msg"=>$staff_leaves[0]->user_name." is on leave for ". $from_date==$to_date?$from_date:($staff_leaves[0]->$from_date.' to '.$staff_leaves[0]->$to_date)));
     }
+    return true;
+  } 
 
-    public function deleteProjectSchedule(Request $request)
-    {
-        $schedule = ProjectSchedule::where('id', $request->get('id'))->delete();;
+  public function saveProjectSchedule(Request $request)
+  {
+    if (!empty($request->get('id'))) {
+      $schedule = ProjectSchedule::find($request->get('id'));
+    } else {
+      $schedule = new ProjectSchedule;
     }
+    $booking = Booking::where('address', $request->get('title'))->first();
+    if (!empty($booking)) {
+      $schedule->event_id = $booking->id;
+      $schedule->type = 1;
 
-    public function modalData(Request $request)
+    } else {
+      $draft = Draft::where('address', $request->get('title'))->first();
+      if (!empty($draft)) {
+        $schedule->event_id = $draft->id;
+        $schedule->type = 2;
+
+      }
+    }
+    $schedule->project_name = $request->get('title');
+    $schedule->slot = $request->get('slot');
+    $schedule->foreman_id = $request->get('resource');
+    $schedule->notes = $request->get('notes');
+    $schedule->start = $request->get('start');
+    $schedule->staff_id = $request->get('staff');
+    $schedule->end = $request->get('end');
+    $schedule->save();
+    return true;
+  }
+
+  public function getStaff(Request $request)
+  {
+    $staff = User::with('staff')->find($request->get('foreman_id'))->staff->pluck('id');
+    return $staff;
+  }
+
+  public function deleteProjectSchedule(Request $request)
+  {
+    $schedule = ProjectSchedule::where('id', $request->get('id'))->delete();;
+  }
+
+  public function modalData(Request $request)
+  {
+    $schedule = ProjectSchedule::find($request->get('id'));
+    $id = $schedule->event_id;
+    if($schedule->type==1)
     {
-        $id = ProjectSchedule::find($request->get('id'))->event_id;
-        $booking = Booking::find($id);
-        $booking_data = $booking->BookingData->sortBy('department_id');
-        $html = '<div class="container">
+    $booking = Booking::find($id);
+    $booking_data = $booking->BookingData->sortBy('department_id');
+    }else{
+    $booking = Draft::find($id);
+    $booking_data = $booking->DraftData->sortBy('department_id');
+    }
+    $html = '<div class="container">
                                 <div class="row">
                                 <div class="col-md-4">
                                     <div class="info-txt">
                                         <span>BCN</span>
-                                        <p id="bcn">'.(!empty($booking->bcn)?$booking->bcn:"NA").'</p>
+                                        <p id="bcn">' . (!empty($booking->bcn) ? $booking->bcn : "N/A") . '</p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="info-txt">
                                         <span>Address</span>
-                                        <p id="booking_address" style="text-decoration:underline;cursor:pointer">'.$booking->bcn.'</p>
+                                        <p id="booking_address" style="text-decoration:underline;cursor:pointer">' . $booking->address . '</p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="info-txt">
                                         <span>Building Company</span>
-                                        <p id="building_company">'.($booking_data[0]->department_id == "1" ? $booking_data[0]->contact->title : "NA").'</p>
+                                        <p id="building_company">' . ($booking_data[0]->department_id == "1" ? $booking_data[0]->contact->title : "N/A") . '</p>
                                     </div>
                                 </div>
                             </div>
@@ -112,13 +163,13 @@ class CalenderController extends Controller
                                 <div class="col-md-6">
                                     <div class="info-txt">
                                         <span>Floor Type</span>
-                                        <p id="floor_type">'.$booking->floor_type.'</p>
+                                        <p id="floor_type">' . (!empty($booking->floor_type) ? $booking->floor_type : "N/A") . '</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="info-txt">
                                         <span>Floor Area</span>
-                                        <p id="floor_area">'.$booking->floor_area.'</p>
+                                        <p id="floor_area">' . (!empty($booking->floor_area) ? $booking->floor_area : "N/A") . '</p>
                                     </div>
                                 </div>
                             </div>
@@ -126,7 +177,7 @@ class CalenderController extends Controller
                                 <div class="col-md-12">
                                     <div class="info-txt">
                                         <span>Notes</span>
-                                        <p id="booking_notes">'.$booking->notes.'</p>
+                                        <p id="booking_notes">' . (!empty($booking->notes) ? $booking->notes : "N/A") . '</p>
                                     </div>
                                 </div>
                             </div>
@@ -136,70 +187,70 @@ class CalenderController extends Controller
                                 <div class="row">
 								<div class="col-md-6" style="border-right: 1px solid #E7E7E7;">
                                 ';
-        foreach ($booking_data->slice(1, (int)count($booking_data) / 2) as $res) {
-            $booking_date = $res->date;
-            $title = $res->department->title . ($res->service != '' ? ' (' . $res->service . ')' : '') . ($res->reorder_no != '0' ? ' (Reorder' . $res->reorder_no . ')' : '');
-            switch ($res->status) {
-                case '0':
-                    $class = "pending-txt";
-                    $status = "Pending";
-                    break;
-                case '1':
-                    $class = "confirmed-txt";
-                    $status = "Confirmed";
-                    break;
-                case '2':
-                    $class = "cancelled-txt";
-                    $status = "On hold";
-                    break;
-                default:
-                    $class = "";
-                    $status = "";
-            }
+    foreach ($booking_data->slice(1, (int)count($booking_data) / 2) as $res) {
+      $booking_date = $res->date;
+      $title = $res->department->title . ($res->service != '' ? ' (' . $res->service . ')' : '') . ($res->reorder_no != '0' ? ' (Reorder' . $res->reorder_no . ')' : '');
+      switch ($res->status) {
+        case '0':
+          $class = "pending-txt";
+          $status = "Pending";
+          break;
+        case '1':
+          $class = "confirmed-txt";
+          $status = "Confirmed";
+          break;
+        case '2':
+          $class = "cancelled-txt";
+          $status = "On hold";
+          break;
+        default:
+          $class = "";
+          $status = "";
+      }
 
-            $html .= '<div class="steel  pop-flex ' . $class . '">
+      $html .= '<div class="steel  pop-flex ' . $class . '">
 										<p>' . $title . '</p>
 										<span>' . date('d/m/Y h:i A', strtotime($booking_date)) . ' - ' . $status . '</span>
 									</div>
 									';
-        }
-        $html .=        '</div><div class="col-md-6">';
-        foreach ($booking_data->slice(((int)count($booking_data) / 2) + 1) as $res) {
-            $title = $res->department->title . ($res->service != '' ? ' (' . $res->service . ')' : '') . ($res->reorder_no != '0' ? ' (Reorder' . $res->reorder_no . ')' : '');
-            $booking_date = $res->date;
-            switch ($res->status) {
-                case '0':
-                    $class = "pending-txt";
-                    $status = "Pending";
-                    break;
-                case '1':
-                    $class = "confirmed-txt";
-                    $status = "Confirmed";
-                    break;
-                case '2':
-                    $class = "cancelled-txt";
-                    $status = "On hold";
+    }
+    $html .=        '</div><div class="col-md-6">';
+    foreach ($booking_data->slice(((int)count($booking_data) / 2) + 1) as $res) {
+      $title = $res->department->title . ($res->service != '' ? ' (' . $res->service . ')' : '') . ($res->reorder_no != '0' ? ' (Reorder' . $res->reorder_no . ')' : '');
+      $booking_date = $res->date;
+      switch ($res->status) {
+        case '0':
+          $class = "pending-txt";
+          $status = "Pending";
+          break;
+        case '1':
+          $class = "confirmed-txt";
+          $status = "Confirmed";
+          break;
+        case '2':
+          $class = "cancelled-txt";
+          $status = "On hold";
 
-                    break;
-                default:
-                    $class = "";
-                    $status = "";
-            }
-            $html .= '			<div class="pods ' . $class . ' pop-flex">
+          break;
+        default:
+          $class = "";
+          $status = "";
+      }
+      $html .= '			<div class="pods ' . $class . ' pop-flex">
 										<p>' . $title . '</p>
 										<span>' . date('d/m/Y h:i A', strtotime($booking_date)) . ' - ' . $status . '</span>
 									</div>';
-        }
-
-        $html .= '</div></div></div></div></div>';
-
-        return $html;
     }
 
-    public function check_cron()
+    $html .= '</div></div></div></div></div>';
+
+    return $html;
+  }
+
+  public function check_cron()
   {
     $bookings = ProjectSchedule::whereDate('start', '=', \Carbon\Carbon::tomorrow())->get();
-   // dd($bookings);
+    // dd($bookings);
     $account_sid = \config('const.twilio_sid');;
     $auth_token = \config('const.twilio_token');
     $twilio_number = "+16209129397";
@@ -209,9 +260,8 @@ class CalenderController extends Controller
       $address = $booking->project_name;
       $slot = $booking->slot == 1 ? 'AM' : 'PM';
       $foreman_name = $booking->foreman?->name;
-      if(empty($booking->staff_id))
-      {
-        $booking->staff_id=[];
+      if (empty($booking->staff_id)) {
+        $booking->staff_id = [];
       }
       $staff_names = implode(", ", Staff::whereIn('id', $booking->staff_id)->get()->pluck('name')->toArray());;
       $custom = !empty($staff_names) ? "with $staff_names" : "";
@@ -235,14 +285,13 @@ class CalenderController extends Controller
             )
           );
           \Log::info("Message sent!");
-
         } catch (Exception $e) {
           $e->getMessage();
         }
       }
       //send app notification 
       $tokens = DeviceToken::where(array('user_id' => $booking->foreman_id, 'model' => 'user'))->get();
-      Notification::create(['user_id' => $booking->foreman_id, 'model' => 'user','notification'=>$msg]);
+      Notification::create(['user_id' => $booking->foreman_id, 'model' => 'user', 'notification' => $msg]);
       foreach ($tokens as $token)
         $this->notify($token, $msg);
 
@@ -251,7 +300,7 @@ class CalenderController extends Controller
         $staff_name = $staff_data?->name;
         $custom = "under $foreman_name";
         $msg = "Hi $staff_name,\nThe location to report tomorrow is $address in the $slot $custom";
-    
+
         $details['to'] = $staff_data->email;
         $details['subject'] = "Boxit Foundation's Reminder";
         $details['body'] = $msg;
@@ -272,10 +321,9 @@ class CalenderController extends Controller
           }
         }
         $tokens = DeviceToken::where(array('user_id' => $staff, 'model' => 'staff'))->get();
-        Notification::create(['user_id' => $staff, 'model' => 'staff','notification'=>$msg]);
+        Notification::create(['user_id' => $staff, 'model' => 'staff', 'notification' => $msg]);
         foreach ($tokens as $token)
           $this->notify($token, $msg);
-
       }
     }
   }

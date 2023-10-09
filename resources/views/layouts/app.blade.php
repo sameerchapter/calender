@@ -74,6 +74,7 @@
                             <li class="{{ request()->routeIs('calender') ? 'active' : '' }}"><a href="{{url('/')}}" class="nav_link"><img src="/img/calendar.png">Calendar</a></li>
                             @if(Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Project Manager'))
                             <li class="{{ request()->routeIs('staff.list') || request()->routeIs('team.assign') ? 'active' : '' }}"><a href="{{url('/staff-management')}}" class="nav_link"><img src="/img/users.png">Staff Management</a></li>
+                            <li class="{{ request()->routeIs('leaves') ? 'active' : '' }}"><a href="{{url('/leave-management')}}" class="nav_link"><img src="/img/contacts.png">Leaves</a></li>
                             <li class="{{ request()->routeIs('notification') ? 'active' : ''  }}"><a href="{{url('/send-notification')}}" class="nav_link"><img src="/img/smartphone-line.svg">Mobile App Broadcast</a></li>
                             <li class="{{ request()->routeIs('team.notification') ? 'active' : '' }}"><a href="{{url('/team-notification')}}" class="nav_link"><img src="/img/notification-line.svg">Team Notification</a></li>
                             @endif

@@ -43,7 +43,12 @@ Route::group(['middleware' => ['auth:app,staff']], function() {
     Route::post('/deleteProjectSchedule', [App\Http\Controllers\CalenderController::class, 'deleteProjectSchedule'])->name('saveProjectSchedule');
     Route::post('/modal-data', [App\Http\Controllers\CalenderController::class, 'modalData']);
     Route::post('/foreman-staff', [App\Http\Controllers\CalenderController::class, 'getStaff']);
+    Route::post('/check-leave', [App\Http\Controllers\CalenderController::class, 'checkLeave']);
     Route::get('/staff-management', [App\Http\Controllers\StaffController::class, 'index'])->name('staff.list');
+    Route::get('/leave-management', [App\Http\Controllers\LeavesController::class, 'index'])->name('leaves.get');
+    Route::post('/leaves', [App\Http\Controllers\LeavesController::class, 'search'])->name('leaves.get');
+    Route::post('/get-leaves', [App\Http\Controllers\LeavesController::class, 'get_leaves'])->name('user.leaves'); 
+    Route::post('/save-leaves', [App\Http\Controllers\LeavesController::class, 'save_leaves'])->name('userleaves.save'); 
     Route::post('/staff', [App\Http\Controllers\StaffController::class, 'staffs'])->name('staff.get');
     Route::post('/add-staff', [App\Http\Controllers\StaffController::class, 'add_staff'])->name('staff.add');
     Route::post('/edit-staff', [App\Http\Controllers\StaffController::class, 'edit_staff'])->name('staff.edit');
