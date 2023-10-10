@@ -152,7 +152,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="mbsc-form-group">
+                            <div class="mbsc-form-group from_to_fields">
                                 <label for="employee-shifts-start">
                                     From date
                                     <input mbsc-input data-dropdown="true" id="employee-shifts-start" />
@@ -244,7 +244,7 @@
                     title: "<?php echo $res->project_name; ?>",
                     notes: <?php echo json_encode($res->notes); ?>,
                     resource: "<?php echo $res->foreman_id; ?>",
-                    staff_id: <?php print(json_encode($res->staff_id)); ?>,
+                    staff: <?php print(json_encode($res->staff_id)); ?>,
                     slot: <?php echo $res->slot; ?>,
                     color: "<?php $f_staff_collection =  $foreman->filter(function ($f) use ($res) {
                                 return $f->id == $res->foreman_id;
@@ -288,6 +288,7 @@
 
         function createAddPopup(args) {
             // hide delete button inside add popup
+            $(".from_to_fields").show();
             $deleteButton.hide();
             $.ajax({
                 headers: {
@@ -330,7 +331,7 @@
                                 data: {
                                     foreman_id: tempShift.resource,
                                     staff_id: tempShift.staff,
-                                    from_date:dateFormat(tempShift.start),
+                                    from_date: dateFormat(tempShift.start),
                                     to_date: dateFormat(tempShift.end)
                                 },
                                 type: 'POST',
@@ -353,11 +354,34 @@
                             var foremans_staff = staff.filter(x => x.id == tempShift.resource);
                             let difference = array_diff(tempShift.staff, foremans_staff[0].staff_key.map(String));
                             tempShift.color = difference.length > 0 ? "red" : "blue";
-                            calendar.updateEvent(tempShift);
-                            setTimeout(function() {
-                                tempShift.id = "";
-                                saveProject(tempShift);
-                            }, 100);
+
+                            tempShift.id = "";
+                            saveProject(tempShift);
+
+                            let event_array = [];
+                            let endDate = new Date(tempShift.end); // today
+                            let startDate = new Date(tempShift.start); // Jan 1st 2017
+                            let daysOfYear = [];
+                            for (let day = startDate; day <= endDate; day.setDate(day.getDate() + 1)) {
+                                setTimeout(function() {
+                                    calendar.updateEvent({
+                                        "allDay": false,
+                                        "end": '2023-10-11T13:00',
+                                        "id": ++latest_id,
+                                        "resource": tempShift.resource,
+                                        "slot": tempShift.slot,
+                                        "start": '2023-10-11T07:00',
+                                        "title": tempShift.title,
+                                        "staff": tempShift.staff,
+                                        "color": tempShift.color,
+                                    });
+                                }, 200);
+
+
+                            }
+
+
+
                             deleteShift = false;
                             popup.close();
                         },
@@ -384,6 +408,7 @@
             var headerText = '<div>' + ev.title + '</div>';
 
             // show delete button inside edit popup
+            $(".from_to_fields").hide();
             $deleteButton.show();
 
             deleteShift = false;
@@ -408,7 +433,7 @@
                                 data: {
                                     foreman_id: resource.id,
                                     staff_id: tempShift.staff,
-                                    from_date:dateFormat(tempShift.start),
+                                    from_date: dateFormat(tempShift.start),
                                     to_date: dateFormat(tempShift.end)
                                 },
                                 type: 'POST',
@@ -440,15 +465,14 @@
                                 color: resource.color,
                                 slot: slot.id,
                             }
-                           
 
-                            if(typeof tempShift.staff !== 'undefined')
-                            {
-                            var foremans_staff = staff.filter(x => x.id == tempShift.resource);
-                            let difference = array_diff(tempShift.staff, foremans_staff[0].staff_key.map(String));
-                            data.color = difference.length > 0 ? "red" : "blue";
-                            }else{
-                                data.color="red";
+
+                            if (typeof tempShift.staff !== 'undefined') {
+                                var foremans_staff = staff.filter(x => x.id == tempShift.resource);
+                                let difference = array_diff(tempShift.staff, foremans_staff[0].staff_key.map(String));
+                                data.color = difference.length > 0 ? "red" : "blue";
+                            } else {
+                                data.color = "red";
                             }
                             calendar.updateEvent(data);
                             setTimeout(function() {
@@ -465,8 +489,8 @@
             // fill popup with the selected event data
             $notes.mobiscroll('getInst').value = ev.notes || '';
             $name.mobiscroll('getInst').value = ev.title || '';
-            if (ev.staff_id != "" && ev.staff_id != null) {
-                staffpicker.setVal(ev.staff_id.map(String));
+            if (ev.staff != "" && ev.staff != null) {
+                staffpicker.setVal(ev.staff.map(String));
 
             }
             range.setVal([ev.start, ev.end]);
@@ -507,39 +531,39 @@
                     resource: ev.resource,
                 };
             },
-         
-            onEventUpdate: function(args, inst){
+
+            onEventUpdate: function(args, inst) {
                 var msg = "";
-                            $.ajax({
-                                headers: {
-                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                                },
-                                url: "{{ url('check-leave') }}",
-                                async: false,
-                                data: {
-                                    foreman_id: args.event.resource,
-                                    staff_id: args.event.staff,
-                                    from_date:dateFormat(args.event.start),
-                                    to_date: dateFormat(args.event.end)
-                                },
-                                type: 'POST',
-                                dataType: 'json',
-                                success: function(result) {
-                                    if (result.success == "true") {
-                                        msg = result.msg;
-                                    }
-                                }
-                            });
-                            if (msg != "") {
-                                mobiscroll.toast({
-                                    duration: 3000,
-                                    message: msg,
-                                    color: 'danger',
-                                    display: 'top'
-                                });
-                                return false;
-                            }
-               setTimeout(function() {
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    url: "{{ url('check-leave') }}",
+                    async: false,
+                    data: {
+                        foreman_id: args.event.resource,
+                        staff_id: args.event.staff,
+                        from_date: dateFormat(args.event.start),
+                        to_date: dateFormat(args.event.end)
+                    },
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.success == "true") {
+                            msg = result.msg;
+                        }
+                    }
+                });
+                if (msg != "") {
+                    mobiscroll.toast({
+                        duration: 3000,
+                        message: msg,
+                        color: 'danger',
+                        display: 'top'
+                    });
+                    return false;
+                }
+                setTimeout(function() {
                     saveProject(args.event);
                 }, 500);
             },
@@ -559,9 +583,9 @@
 
                 $name.val('');
                 $notes.val('');
+                projectpicker.setVal('');
                 $staff.find("option").prop("selected", false);
                 tempShift = args.event;
-                tempShift.id = ++latest_id;
                 setTimeout(function() {
                     createAddPopup(args);
                 }, 100);
@@ -688,9 +712,8 @@
             });
         });
     });
-    
-    function dateFormat(d)
-    {
+
+    function dateFormat(d) {
         const padL = (nr, len = 2, chr = `0`) => `${nr}`.padStart(2, chr);
         var dt = new Date(d);
         var new_date = `${dt.getFullYear()}-${
@@ -700,6 +723,7 @@
     padL(dt.getMinutes())}`
         return new_date;
     }
+
     function saveProject(data) {
         data.start = dateFormat(data.start);
         data.end = dateFormat(data.end);

@@ -15,6 +15,9 @@ use App\Models\DeviceToken;
 use App\Models\Leaves;
 use Exception;
 use DB;
+use DateTime;
+use DateInterval;
+use DatePeriod;
 use Illuminate\Support\Facades\Auth;
 
 class CalenderController extends Controller
@@ -59,11 +62,11 @@ class CalenderController extends Controller
       $to_date =  date('Y-m-d', strtotime($request->get('to_date')));
       $foreman_id = $request->get('foreman_id');
       $staff_ids  =$request->get('staff_id');
-      //DB::enableQueryLog();
-     $foreman_leaves = Leaves::where([['user_id',$foreman_id],['user_type',1]])->where([['from_date','<=',$from_date],['to_date','>=',$to_date]])
-     ->orwhereBetween('from_date',array($from_date,$to_date))
-    ->orWhereBetween('to_date',array($from_date,$to_date))->get();
-    //dd(DB::getQueryLog());
+     $foreman_leaves = Leaves::where('user_id',$foreman_id)->where('user_type',1)->
+    where(function($query) use ($from_date,$to_date){
+      $query->where([['from_date','<=',$from_date],['to_date','>=',$to_date]]);
+      $query->orwhereBetween('from_date',array($from_date,$to_date));
+      $query->orWhereBetween('to_date',array($from_date,$to_date));})->get();
 
     if(count($foreman_leaves)>0)
     {
@@ -74,9 +77,11 @@ class CalenderController extends Controller
     {
       return true;
     }
-    $staff_leaves = Leaves::whereIn('user_id',$staff_ids)->where([['user_type',2]])->where([['from_date','<=',$from_date],['to_date','>=',$to_date]])
-    ->orwhereBetween('from_date',array($from_date,$to_date))
-   ->orWhereBetween('to_date',array($from_date,$to_date))->get();
+    $staff_leaves = Leaves::whereIn('user_id',$staff_ids)->where([['user_type',2]])->
+    where(function($query) use ($from_date,$to_date){
+      $query->where([['from_date','<=',$from_date],['to_date','>=',$to_date]]);
+      $query->orwhereBetween('from_date',array($from_date,$to_date));
+      $query->orWhereBetween('to_date',array($from_date,$to_date));})->get();
   if(count($staff_leaves)>0)
     {
       $msg= ucfirst($staff_leaves[0]->user_name)." is on leave for ". ($from_date==$to_date?$from_date:($staff_leaves[0]->from_date.' to '.$staff_leaves[0]->to_date));
@@ -88,7 +93,11 @@ class CalenderController extends Controller
 
   public function saveProjectSchedule(Request $request)
   {
-    if (!empty($request->get('id'))) {
+    $begin = Date('Y-m-d',strtotime($request->get('start')));
+    $end = Date('Y-m-d',strtotime($request->get('end')));
+    // echo $begin;
+    while (strtotime($begin) <= strtotime($end)) { 
+     if (!empty($request->get('id'))) {
       $schedule = ProjectSchedule::find($request->get('id'));
     } else {
       $schedule = new ProjectSchedule;
@@ -110,11 +119,15 @@ class CalenderController extends Controller
     $schedule->slot = $request->get('slot');
     $schedule->foreman_id = $request->get('resource');
     $schedule->notes = $request->get('notes');
-    $schedule->start = $request->get('start');
+    $schedule->start =$begin.($request->get('slot')==1?'T07:00':'T12:00');
     $schedule->staff_id = $request->get('staff');
-    $schedule->end = $request->get('end');
+    $schedule->end = $begin.($request->get('slot')==1?'T13:00':'T18:00');;
     $schedule->save();
-    return true;
+    $begin = date("Y-m-d", strtotime("+1 day", strtotime($begin)));
+
+  }
+  return true;
+
   }
 
   public function getStaff(Request $request)
