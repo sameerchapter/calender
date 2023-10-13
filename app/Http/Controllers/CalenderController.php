@@ -43,8 +43,8 @@ class CalenderController extends Controller
     $foreman = User::whereHas("roles", function ($q) {
       $q->where("name", "Foreman");
     })->whereNotIn('name', ['NA', 'N/A'])->get();
-    $projects = Booking::all();
-    $drafts = Draft::all();
+    $projects = Booking::orderBy('id', 'DESC')->get();
+    $drafts = Draft::orderBy('id', 'DESC')->get();
     $staff = Staff::all();
     $schedules = ProjectSchedule::all();
     $latest_id = ProjectSchedule::latest()->first();
