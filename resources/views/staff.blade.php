@@ -132,7 +132,6 @@
 
 
   $(document).on("click", ".edit", function() {
-    $("#email").attr('readonly', true);
     let id = $(this).data('id');
     jQuery.ajax({
       type: 'POST',
@@ -161,7 +160,6 @@
     $(".save_button").attr("id", "submit_staff")
     $("#modal_staff_id").text("");
     $("#modal_title").html("Add");
-    $("#email").attr('readonly', false);
     $("#name").val("");
     $("#email").val("");
     $("#contact").val("");

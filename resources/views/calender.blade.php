@@ -510,6 +510,10 @@
 
                 }
             },
+            colors: [
+  { background: '#f0f8ff', recurring: { repeat: 'weekly', weekDays: 'SU' } },
+  { background: '#f0f8ff', recurring: { repeat: 'weekly', weekDays: 'SA' } }
+],
             eventOverlap: false,
             data: shifts,
             dragToCreate: true,
