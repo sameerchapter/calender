@@ -533,6 +533,18 @@
             },
 
             onEventUpdate: function(args, inst) {
+                var samedayEvent = calendar.getEvents(args.event.start);
+                if (samedayEvent.length > 0) {
+                    if (args.event.resource == samedayEvent[0].resource) {
+                        mobiscroll.toast({
+                            duration: 2000,
+                            message: 'Already assigned to project !',
+                            color: 'warning',
+                            display: 'top'
+                        });
+                        return false;
+                    }
+                }
                 var msg = "";
                 $.ajax({
                     headers: {
