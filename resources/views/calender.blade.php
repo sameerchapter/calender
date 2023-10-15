@@ -115,9 +115,11 @@
                         <span id="popl">Projects Calendar</span>
                     </div>
                 </div>
+                <div class="col-md-9">
+                </div>
                 <div class="col-md-3">
                     <div class="form-head">
-                        <label>Choose specific date for calender:</label>
+                        <label>Skip calender to:</label>
                         <input type="date" onchange="moveCalender(this);" class="form-control" id="specific_date">
                     </div>
                 </div>
