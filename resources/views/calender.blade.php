@@ -324,6 +324,7 @@
                         keyCode: 'enter',
                         handler: function() {
                             var msg = "";
+                            var color = "";
                             $.ajax({
                                 headers: {
                                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -341,6 +342,7 @@
                                 success: function(result) {
                                     if (result.success == "true") {
                                         msg = result.msg;
+                                        color = result.color;
                                     }
                                 }
                             });
@@ -348,7 +350,7 @@
                                 mobiscroll.toast({
                                     duration: 3000,
                                     message: msg,
-                                    color: 'danger',
+                                    color: color,
                                     display: 'top'
                                 });
                                 return false;
@@ -426,6 +428,7 @@
                         keyCode: 'enter',
                         handler: function() {
                             var msg = "";
+                            var color = "";
                             $.ajax({
                                 headers: {
                                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -433,6 +436,7 @@
                                 url: "{{ url('check-leave') }}",
                                 async: false,
                                 data: {
+                                    id: ev.id,
                                     foreman_id: resource.id,
                                     staff_id: tempShift.staff,
                                     from_date: dateFormat(tempShift.start),
@@ -443,6 +447,7 @@
                                 success: function(result) {
                                     if (result.success == "true") {
                                         msg = result.msg;
+                                        color = result.color;
                                     }
                                 }
                             });
@@ -450,7 +455,7 @@
                                 mobiscroll.toast({
                                     duration: 3000,
                                     message: msg,
-                                    color: 'danger',
+                                    color: color,
                                     display: 'top'
                                 });
                                 return false;
@@ -512,10 +517,21 @@
 
                 }
             },
-            colors: [
-  { background: '#f0f8ff', recurring: { repeat: 'weekly', weekDays: 'SU' } },
-  { background: '#f0f8ff', recurring: { repeat: 'weekly', weekDays: 'SA' } }
-],
+            colors: [{
+                    background: '#f0f8ff',
+                    recurring: {
+                        repeat: 'weekly',
+                        weekDays: 'SU'
+                    }
+                },
+                {
+                    background: '#f0f8ff',
+                    recurring: {
+                        repeat: 'weekly',
+                        weekDays: 'SA'
+                    }
+                }
+            ],
             eventOverlap: false,
             data: shifts,
             dragToCreate: true,
@@ -539,19 +555,8 @@
             },
 
             onEventUpdate: function(args, inst) {
-                var samedayEvent = calendar.getEvents(args.event.start);
-                if (samedayEvent.length > 0) {
-                    if (args.event.resource == samedayEvent[0].resource) {
-                        mobiscroll.toast({
-                            duration: 2000,
-                            message: 'Already assigned to project !',
-                            color: 'warning',
-                            display: 'top'
-                        });
-                        return false;
-                    }
-                }
                 var msg = "";
+                var color = "";
                 $.ajax({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -559,6 +564,7 @@
                     url: "{{ url('check-leave') }}",
                     async: false,
                     data: {
+                        id: args.event.id,
                         foreman_id: args.event.resource,
                         staff_id: args.event.staff,
                         from_date: dateFormat(args.event.start),
@@ -569,6 +575,7 @@
                     success: function(result) {
                         if (result.success == "true") {
                             msg = result.msg;
+                            color = result.color;
                         }
                     }
                 });
@@ -576,7 +583,7 @@
                     mobiscroll.toast({
                         duration: 3000,
                         message: msg,
-                        color: 'danger',
+                        color: color,
                         display: 'top'
                     });
                     return false;

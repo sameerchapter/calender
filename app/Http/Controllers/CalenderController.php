@@ -55,79 +55,114 @@ class CalenderController extends Controller
     }
     return view('calender', compact('drafts', 'foreman', 'projects', 'schedules', 'staff', 'latest_id'));
   }
-   
+
   public function checkLeave(Request $request)
   {
-      $from_date =  date('Y-m-d', strtotime($request->get('from_date')));
-      $to_date =  date('Y-m-d', strtotime($request->get('to_date')));
-      $foreman_id = $request->get('foreman_id');
-      $staff_ids  =$request->get('staff_id');
-     $foreman_leaves = Leaves::where('user_id',$foreman_id)->where('user_type',1)->
-    where(function($query) use ($from_date,$to_date){
-      $query->where([['from_date','<=',$from_date],['to_date','>=',$to_date]]);
-      $query->orwhereBetween('from_date',array($from_date,$to_date));
-      $query->orWhereBetween('to_date',array($from_date,$to_date));})->get();
+    $from_date =  date('Y-m-d', strtotime($request->get('from_date')));
+    $to_date =  date('Y-m-d', strtotime($request->get('to_date')));
+    $foreman_id = $request->get('foreman_id');
+    $staff_ids  = $request->get('staff_id');
+    $id  = $request->get('id');
 
-    if(count($foreman_leaves)>0)
+    // Already Assign Code
+
+    $foreman_assigned = ProjectSchedule::where('foreman_id', $foreman_id)->where(function ($query) use ($from_date, $to_date) {
+      $query->where([[DB::raw('DATE_FORMAT(start, "%Y-%m-%d")'), '<=', $from_date], [DB::raw('DATE_FORMAT(end, "%Y-%m-%d")'), '>=', $to_date]]);
+      $query->orwhereBetween(DB::raw('DATE_FORMAT(start, "%Y-%m-%d")'), array($from_date, $to_date));
+      $query->orWhereBetween(DB::raw('DATE_FORMAT(end, "%Y-%m-%d")'), array($from_date, $to_date));
+    });
+
+    if(!empty($id))
     {
-      $msg= ucfirst($foreman_leaves[0]->user_name)." is on leave for ". ($from_date==$to_date?$from_date:($foreman_leaves[0]->from_date.' to '.$foreman_leaves[0]->to_date));
-       return json_encode(array("success"=>"true","msg"=>$msg));
+      $foreman_assigned = $foreman_assigned->whereNot('id',$id);
     }
-    if(empty($staff_ids))
-    {
+    $foreman_assigned=$foreman_assigned->get();
+    if (count($foreman_assigned) > 0) {
+      $msg = "Foreman is already assigned to project.";
+      return json_encode(array("success" => "true", "color" => "warning", "msg" => $msg));
+    }
+
+
+    if (!empty($staff_ids)) {
+      foreach ($staff_ids as $res) {
+        $staff_assigned = ProjectSchedule::whereJsonContains('staff_id', $res)->whereNot('id',$id)->where(function ($query) use ($from_date, $to_date) {
+          $query->where([[DB::raw('DATE_FORMAT(start, "%Y-%m-%d")'), '<=', $from_date], [DB::raw('DATE_FORMAT(end, "%Y-%m-%d")'), '>=', $to_date]]);
+          $query->orwhereBetween(DB::raw('DATE_FORMAT(start, "%Y-%m-%d")'), array($from_date, $to_date));
+          $query->orWhereBetween(DB::raw('DATE_FORMAT(end, "%Y-%m-%d")'), array($from_date, $to_date));
+        });
+
+        if(!empty($id))
+        {
+          $staff_assigned = $staff_assigned->whereNot('id',$id);
+        }
+        $staff_assigned=$staff_assigned->get();
+        if (count($staff_assigned) > 0) {
+          $msg = "Staff is already assigned to project.";
+          return json_encode(array("success" => "true", "color" => "warning", "msg" => $msg));
+        }
+      }
+    }
+    // Leave Code
+
+    $foreman_leaves = Leaves::where('user_id', $foreman_id)->where('user_type', 1)->where(function ($query) use ($from_date, $to_date) {
+      $query->where([['from_date', '<=', $from_date], ['to_date', '>=', $to_date]]);
+      $query->orwhereBetween('from_date', array($from_date, $to_date));
+      $query->orWhereBetween('to_date', array($from_date, $to_date));
+    })->get();
+
+    if (count($foreman_leaves) > 0) {
+      $msg = ucfirst($foreman_leaves[0]->user_name) . " is on leave for " . ($from_date == $to_date ? $from_date : ($foreman_leaves[0]->from_date . ' to ' . $foreman_leaves[0]->to_date));
+      return json_encode(array("success" => "true", "msg" => $msg));
+    }
+    if (empty($staff_ids)) {
       return true;
     }
-    $staff_leaves = Leaves::whereIn('user_id',$staff_ids)->where([['user_type',2]])->
-    where(function($query) use ($from_date,$to_date){
-      $query->where([['from_date','<=',$from_date],['to_date','>=',$to_date]]);
-      $query->orwhereBetween('from_date',array($from_date,$to_date));
-      $query->orWhereBetween('to_date',array($from_date,$to_date));})->get();
-  if(count($staff_leaves)>0)
-    {
-      $msg= ucfirst($staff_leaves[0]->user_name)." is on leave for ". ($from_date==$to_date?$from_date:($staff_leaves[0]->from_date.' to '.$staff_leaves[0]->to_date));
+    $staff_leaves = Leaves::whereIn('user_id', $staff_ids)->where([['user_type', 2]])->where(function ($query) use ($from_date, $to_date) {
+      $query->where([['from_date', '<=', $from_date], ['to_date', '>=', $to_date]]);
+      $query->orwhereBetween('from_date', array($from_date, $to_date));
+      $query->orWhereBetween('to_date', array($from_date, $to_date));
+    })->get();
+    if (count($staff_leaves) > 0) {
+      $msg = ucfirst($staff_leaves[0]->user_name) . " is on leave for " . ($from_date == $to_date ? $from_date : ($staff_leaves[0]->from_date . ' to ' . $staff_leaves[0]->to_date));
 
-       return json_encode(array("success"=>"true","msg"=>$msg));
+      return json_encode(array("success" => "true", "msg" => $msg));
     }
     return true;
-  } 
+  }
 
   public function saveProjectSchedule(Request $request)
   {
-    $begin = Date('Y-m-d',strtotime($request->get('start')));
-    $end = Date('Y-m-d',strtotime($request->get('end')));
+    $begin = Date('Y-m-d', strtotime($request->get('start')));
+    $end = Date('Y-m-d', strtotime($request->get('end')));
     // echo $begin;
-    while (strtotime($begin) <= strtotime($end)) { 
-     if (!empty($request->get('id'))) {
-      $schedule = ProjectSchedule::find($request->get('id'));
-    } else {
-      $schedule = new ProjectSchedule;
-    }
-    $booking = Booking::where('address', $request->get('title'))->first();
-    if (!empty($booking)) {
-      $schedule->event_id = $booking->id;
-      $schedule->type = 1;
-
-    } else {
-      $draft = Draft::where('address', $request->get('title'))->first();
-      if (!empty($draft)) {
-        $schedule->event_id = $draft->id;
-        $schedule->type = 2;
-
+    while (strtotime($begin) <= strtotime($end)) {
+      if (!empty($request->get('id'))) {
+        $schedule = ProjectSchedule::find($request->get('id'));
+      } else {
+        $schedule = new ProjectSchedule;
       }
+      $booking = Booking::where('address', $request->get('title'))->first();
+      if (!empty($booking)) {
+        $schedule->event_id = $booking->id;
+        $schedule->type = 1;
+      } else {
+        $draft = Draft::where('address', $request->get('title'))->first();
+        if (!empty($draft)) {
+          $schedule->event_id = $draft->id;
+          $schedule->type = 2;
+        }
+      }
+      $schedule->project_name = $request->get('title');
+      $schedule->slot = $request->get('slot');
+      $schedule->foreman_id = $request->get('resource');
+      $schedule->notes = $request->get('notes');
+      $schedule->start = $begin . ($request->get('slot') == 1 ? 'T07:00' : 'T12:00');
+      $schedule->staff_id = $request->get('staff');
+      $schedule->end = $begin . ($request->get('slot') == 1 ? 'T13:00' : 'T18:00');;
+      $schedule->save();
+      $begin = date("Y-m-d", strtotime("+1 day", strtotime($begin)));
     }
-    $schedule->project_name = $request->get('title');
-    $schedule->slot = $request->get('slot');
-    $schedule->foreman_id = $request->get('resource');
-    $schedule->notes = $request->get('notes');
-    $schedule->start =$begin.($request->get('slot')==1?'T07:00':'T12:00');
-    $schedule->staff_id = $request->get('staff');
-    $schedule->end = $begin.($request->get('slot')==1?'T13:00':'T18:00');;
-    $schedule->save();
-    $begin = date("Y-m-d", strtotime("+1 day", strtotime($begin)));
-
-  }
-  return true;
-
+    return true;
   }
 
   public function getStaff(Request $request)
@@ -145,13 +180,12 @@ class CalenderController extends Controller
   {
     $schedule = ProjectSchedule::find($request->get('id'));
     $id = $schedule->event_id;
-    if($schedule->type==1)
-    {
-    $booking = Booking::find($id);
-    $booking_data = $booking->BookingData->sortBy('department_id');
-    }else{
-    $booking = Draft::find($id);
-    $booking_data = $booking->DraftData->sortBy('department_id');
+    if ($schedule->type == 1) {
+      $booking = Booking::find($id);
+      $booking_data = $booking->BookingData->sortBy('department_id');
+    } else {
+      $booking = Draft::find($id);
+      $booking_data = $booking->DraftData->sortBy('department_id');
     }
     $html = '<div class="container">
                                 <div class="row">
