@@ -85,6 +85,7 @@ class CalenderController extends Controller
 
 
     if (!empty($staff_ids)) {
+      $assigned_id=[];
       foreach ($staff_ids as $res) {
         $staff_assigned = ProjectSchedule::whereJsonContains('staff_id', $res)->where('slot',$slot)->whereNot('id', $id)->where(function ($query) use ($from_date, $to_date) {
           $query->where([[DB::raw('DATE_FORMAT(start, "%Y-%m-%d")'), '<=', $from_date], [DB::raw('DATE_FORMAT(end, "%Y-%m-%d")'), '>=', $to_date]]);
@@ -97,9 +98,16 @@ class CalenderController extends Controller
         }
         $staff_assigned = $staff_assigned->get();
         if (count($staff_assigned) > 0) {
-          $msg = "Staff is already assigned to project.";
-          return json_encode(array("success" => "true", "color" => "warning", "msg" => $msg));
+          $assigned_id[]=$res;
         }
+      }
+      if(!empty($assigned_id))
+      {
+        $name=Staff::whereIn('id',$assigned_id)->get()->pluck('name')->toArray();
+        $name=implode(', ',$name);
+        $msg = $name." already assigned to project.";
+        return json_encode(array("success" => "true", "color" => "warning", "msg" => $msg));
+
       }
     }
     // Leave Code
