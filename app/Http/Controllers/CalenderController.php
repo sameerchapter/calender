@@ -60,23 +60,24 @@ class CalenderController extends Controller
   {
     $from_date =  date('Y-m-d', strtotime($request->get('from_date')));
     $to_date =  date('Y-m-d', strtotime($request->get('to_date')));
+    $slot =  $request->get('slot');
     $foreman_id = $request->get('foreman_id');
     $staff_ids  = $request->get('staff_id');
     $id  = $request->get('id');
 
     // Already Assign Code
 
-    $foreman_assigned = ProjectSchedule::where('foreman_id', $foreman_id)->where(function ($query) use ($from_date, $to_date) {
+    $foreman_assigned = ProjectSchedule::where('foreman_id', $foreman_id)->where('slot',$slot)->where(function ($query) use ($from_date, $to_date) {
       $query->where([[DB::raw('DATE_FORMAT(start, "%Y-%m-%d")'), '<=', $from_date], [DB::raw('DATE_FORMAT(end, "%Y-%m-%d")'), '>=', $to_date]]);
       $query->orwhereBetween(DB::raw('DATE_FORMAT(start, "%Y-%m-%d")'), array($from_date, $to_date));
       $query->orWhereBetween(DB::raw('DATE_FORMAT(end, "%Y-%m-%d")'), array($from_date, $to_date));
     });
 
-    if(!empty($id))
-    {
-      $foreman_assigned = $foreman_assigned->whereNot('id',$id);
+    if (!empty($id)) {
+      $foreman_assigned = $foreman_assigned->whereNot('id', $id);
     }
-    $foreman_assigned=$foreman_assigned->get();
+    $foreman_assigned = $foreman_assigned->get();
+
     if (count($foreman_assigned) > 0) {
       $msg = "Foreman is already assigned to project.";
       return json_encode(array("success" => "true", "color" => "warning", "msg" => $msg));
@@ -85,17 +86,16 @@ class CalenderController extends Controller
 
     if (!empty($staff_ids)) {
       foreach ($staff_ids as $res) {
-        $staff_assigned = ProjectSchedule::whereJsonContains('staff_id', $res)->whereNot('id',$id)->where(function ($query) use ($from_date, $to_date) {
+        $staff_assigned = ProjectSchedule::whereJsonContains('staff_id', $res)->where('slot',$slot)->whereNot('id', $id)->where(function ($query) use ($from_date, $to_date) {
           $query->where([[DB::raw('DATE_FORMAT(start, "%Y-%m-%d")'), '<=', $from_date], [DB::raw('DATE_FORMAT(end, "%Y-%m-%d")'), '>=', $to_date]]);
           $query->orwhereBetween(DB::raw('DATE_FORMAT(start, "%Y-%m-%d")'), array($from_date, $to_date));
           $query->orWhereBetween(DB::raw('DATE_FORMAT(end, "%Y-%m-%d")'), array($from_date, $to_date));
         });
 
-        if(!empty($id))
-        {
-          $staff_assigned = $staff_assigned->whereNot('id',$id);
+        if (!empty($id)) {
+          $staff_assigned = $staff_assigned->whereNot('id', $id);
         }
-        $staff_assigned=$staff_assigned->get();
+        $staff_assigned = $staff_assigned->get();
         if (count($staff_assigned) > 0) {
           $msg = "Staff is already assigned to project.";
           return json_encode(array("success" => "true", "color" => "warning", "msg" => $msg));
@@ -103,6 +103,8 @@ class CalenderController extends Controller
       }
     }
     // Leave Code
+    $from_date =  date('Y-m-d', strtotime($request->get('from_date')));
+    $to_date =  date('Y-m-d', strtotime($request->get('to_date')));
 
     $foreman_leaves = Leaves::where('user_id', $foreman_id)->where('user_type', 1)->where(function ($query) use ($from_date, $to_date) {
       $query->where([['from_date', '<=', $from_date], ['to_date', '>=', $to_date]]);

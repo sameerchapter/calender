@@ -332,6 +332,7 @@
                                 url: "{{ url('check-leave') }}",
                                 async: false,
                                 data: {
+                                    slot:tempShift.slot,
                                     foreman_id: tempShift.resource,
                                     staff_id: tempShift.staff,
                                     from_date: dateFormat(tempShift.start),
@@ -438,6 +439,7 @@
                                 data: {
                                     id: ev.id,
                                     foreman_id: resource.id,
+                                    slot:tempShift.slot,
                                     staff_id: tempShift.staff,
                                     from_date: dateFormat(tempShift.start),
                                     to_date: dateFormat(tempShift.end)
@@ -566,6 +568,7 @@
                     data: {
                         id: args.event.id,
                         foreman_id: args.event.resource,
+                        slot: args.event.slot,
                         staff_id: args.event.staff,
                         from_date: dateFormat(args.event.start),
                         to_date: dateFormat(args.event.end)
