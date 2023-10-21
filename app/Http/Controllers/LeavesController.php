@@ -51,7 +51,7 @@ public function save_leaves(Request $request){
   $i=0;
   foreach($from_dates as $date)
   {
-      Leaves::create(array('user_id'=>$user_id,'user_type'=>$user_type,'user_name'=>$user_name,'to_date'=>date("Y-m-d h:i:s", strtotime($to_dates[$i])),'from_date'=>date("Y-m-d h:i:s", strtotime($date))));
+      Leaves::create(array('user_id'=>$user_id,'user_type'=>$user_type,'user_name'=>$user_name,'to_date'=>date("Y-m-d", strtotime($to_dates[$i])),'from_date'=>date("Y-m-d", strtotime($date))));
       $i++;
   }
   return true;
