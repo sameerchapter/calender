@@ -196,7 +196,15 @@
     var calendar;
 
     function moveCalender(ele) {
-        calendar.navigate($(ele).val());
+        var day=new Date($(ele).val()).getDay();    
+        calendar.setOptions( {view: {
+                timeline: {
+                    type: 'week',
+                    startDay: day,
+                    endDay:day-1,
+                }
+            }})
+        setTimeout(function(){calendar.navigate($(ele).val(),false);},500)    
 
     }
 
@@ -332,7 +340,7 @@
                                 url: "{{ url('check-leave') }}",
                                 async: false,
                                 data: {
-                                    slot:tempShift.slot,
+                                    slot: tempShift.slot,
                                     foreman_id: tempShift.resource,
                                     staff_id: tempShift.staff,
                                     from_date: dateFormat(tempShift.start),
@@ -439,7 +447,7 @@
                                 data: {
                                     id: ev.id,
                                     foreman_id: resource.id,
-                                    slot:tempShift.slot,
+                                    slot: tempShift.slot,
                                     staff_id: tempShift.staff,
                                     from_date: dateFormat(tempShift.start),
                                     to_date: dateFormat(tempShift.end)
@@ -516,7 +524,6 @@
                     type: 'week',
                     startDay: now.getDay(),
                     endDay: now.getDay() - 1,
-
                 }
             },
             colors: [{
