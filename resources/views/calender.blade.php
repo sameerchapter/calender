@@ -1,198 +1,99 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-    .address-txt span,
-    .info-txt span,
-    .status-txt span,
-    .project-txt span {
-        font-size: 14px;
-        color: #000;
-        font-weight: 600;
-        text-align: left;
-    }
-
-    .mbsc-timeline-day {
-        text-align: center;
-    }
-
-    #project-details p {
-        color: #000;
-
-    }
-
-    .mbsc-timeline-slot-title {
-        text-align: center !important;
-    }
-
-    .employee-shifts-day {
-        font-size: 14px;
-        font-weight: 600;
-        opacity: .6;
-    }
-
-    .employee-shifts-popup .mbsc-popup .mbsc-popup-header {
-        padding-top: 8px;
-        padding-bottom: 8px;
-    }
-
-
-    .employee-shifts-cont {
-        position: relative;
-        padding-left: 42px;
-        max-height: 40px;
-    }
-
-    .employee-shifts-avatar {
-        position: absolute;
-        max-height: 40px;
-        max-width: 40px;
-        top: 18px;
-        -webkit-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
-        left: 20px;
-    }
-
-    .employee-shifts-name {
-        font-size: 15px;
-    }
-
-    .employee-shifts-title {
-        font-size: 12px;
-    }
-
-    .md-employee-shifts .mbsc-timeline-resource,
-    .md-employee-shifts .mbsc-timeline-resource-col {
-        width: 200px;
-        align-items: center;
-        display: flex;
-    }
-
-    .md-employee-shifts .mbsc-schedule-event {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 36px;
-    }
-
-    .mbsc-timeline-row {
-        height: 90px;
-    }
-
-    .mbsc-flex-col.mbsc-flex-1-1.mbsc-popup-body.mbsc-popup-body-center.mbsc-ios.mbsc-popup-body-round {
-        border-radius: 0px !important;
-        background-color: #f6f6f6 !important;
-    }
-
-    .mbsc-flex-none.mbsc-popup-header.mbsc-popup-header-center.mbsc-ios {
-        padding: 15px;
-    }
-
-    .foreman-pill {
-        background-color: #172B4D;
-        border: none;
-        color: white;
-        padding: 10px 20px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 16px;
-    }
-
-    .mbsc-timeline-header-sticky .mbsc-timeline-header-date {
-        display: none !important;
-    }
-</style>
-
-<div id="content">
-    <div class="container main">
-        <div class="card-new ptb-50">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="form-head">
-                        <span id="popl">Projects Calendar</span>
-                    </div>
-                </div>
-                <div class="col-md-9">
-                </div>
-                <div class="col-md-3">
-                    <div class="form-head">
-                        <label>Skip calender to:</label>
-                        <input type="date" onchange="moveCalender(this);" class="form-control" id="specific_date">
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="Col-md-11">
-                        <div id="foreman-staff-modal" class="mbsc-cloak">
-                            <div class="mbsc-align-center mbsc-padding">
-
-                            </div>
-                        </div>
-                        <div id="demo-employee-shifts-calendar" class="md-employee-shifts"></div>
-
-                        <div id="demo-employee-shifts-popup" class="employee-shifts-popup">
-
-                            <div class="mbsc-form-group" id="project-details">
-
-                            </div>
-                            <div class="mbsc-form-group search-project">
-                                <label>
-                                    Search Project
-                                    <input mbsc-input id="employee-project-input" data-dropdown="true" />
-                                </label>
-                                <select id="employee-project-name">
-                                    <option>Search Project</option>
-                                    @foreach($drafts as $draft)
-                                    <option value="{{$draft->id}}_1">{{$draft->address}}</option>
-                                    @endforeach
-                                    @foreach($projects as $project)
-                                    <option value="{{$project->id}}_2">{{$project->address}}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mbsc-form-group from_to_fields">
-                                <label for="employee-shifts-start">
-                                    From date
-                                    <input mbsc-input data-dropdown="true" id="employee-shifts-start" />
-                                </label>
-                                <label for="employee-shifts-end">
-                                    To date
-                                    <input mbsc-input data-dropdown="true" id="employee-shifts-end" />
-                                </label>
-                                <div id="demo-employee-shifts-date"></div>
-                            </div>
-                            <div class="mbsc-form-group">
-                                <label>
-                                    Staff
-                                    <input mbsc-input id="employee-staff-input" data-dropdown="false" data-tags="true" />
-                                </label>
-                                <select id="employee-staff-select" multiple>
-                                    @foreach($staff as $res)
-                                    <option value="{{$res->id}}">{{$res->name}}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mbsc-form-group">
-                                <label>
-                                    Notes
-                                    <textarea mbsc-textarea id="employee-project-notes"></textarea>
-                                </label>
-                            </div>
-                            <div class="mbsc-button-group">
-                                <button class="mbsc-button-block" id="employee-shifts-delete" mbsc-button data-color="danger" data-variant="outline">Delete Project</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<style> .address-txt span, .info-txt span, .status-txt span, .project-txt span { font-size: 14px; color: #000;
+    font-weight: 600; text-align: left; } .mbsc-timeline-day { text-align: center; } #project-details p { color: #000; }
+    .mbsc-timeline-slot-title { text-align: center !important; } .employee-shifts-day { font-size: 14px; font-weight:
+    600; opacity: .6; } .employee-shifts-popup .mbsc-popup .mbsc-popup-header { padding-top: 8px; padding-bottom: 8px; }
+    .employee-shifts-cont { position: relative; padding-left: 42px; max-height: 40px; } .employee-shifts-avatar {
+    position: absolute; max-height: 40px; max-width: 40px; top: 18px; -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); left: 20px; } .employee-shifts-name { font-size: 15px; } .employee-shifts-title {
+    font-size: 12px; } .md-employee-shifts .mbsc-timeline-resource, .md-employee-shifts .mbsc-timeline-resource-col {
+    width: 200px; align-items: center; display: flex; } .md-employee-shifts .mbsc-schedule-event { display: flex;
+    align-items: center; justify-content: center; height: 36px; } .mbsc-timeline-row { height: 90px; }
+    .mbsc-flex-col.mbsc-flex-1-1.mbsc-popup-body.mbsc-popup-body-center.mbsc-ios.mbsc-popup-body-round { border-radius:
+    0px !important; background-color: #f6f6f6 !important; }
+    .mbsc-flex-none.mbsc-popup-header.mbsc-popup-header-center.mbsc-ios { padding: 15px; } .foreman-pill {
+    background-color: #172B4D; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration:
+    none; display: inline-block; margin: 4px 2px; cursor: pointer; border-radius: 16px; } .mbsc-timeline-header-sticky
+    .mbsc-timeline-header-date { display: none !important; } </style> <div id="content"> <div class="container main">
+    <div class="card-new ptb-50"> <div class="row">
+    <div class="col-md-12">
+        <div class="form-head">
+            <span id="popl">Projects Calendar</span>
             </div>
         </div>
+        <div class="col-md-9"> </div> <div class="col-md-3">
+            <div class="form-head">
+            <label>Skip calender to:</label>
+            <input type="date" onchange="moveCalender(this);" class="form-control" id="specific_date">
+            </div>
+            </div>
+        </div>
+        <div class="card-body"> <div class="row"> <div class="Col-md-11">
+            <div id="foreman-staff-modal" class="mbsc-cloak">
+            <div class="mbsc-align-center mbsc-padding">
+
+            </div>
+            </div>
+            <div id="demo-employee-shifts-calendar" class="md-employee-shifts"></div>
+
+            <div id="demo-employee-shifts-popup" class="employee-shifts-popup">
+
+            <div class="mbsc-form-group" id="project-details">
+
+        </div>
+        <div class="mbsc-form-group search-project"> <label> Search Project <input mbsc-input
+            id="employee-project-input" data-dropdown="true" /> </label> <select id="employee-project-name">
+            <option>Search Project</option>
+            @foreach($drafts as $draft)
+            <option value="{{$draft->id}}_1">{{$draft->address}}</option>
+            @endforeach
+            @foreach($projects as $project)
+            <option value="{{$project->id}}_2">{{$project->address}}</option>
+            @endforeach
+            </select>
+        </div>
+        <div class="mbsc-form-group from_to_fields">
+            <label for="employee-shifts-start">
+                From date
+                <input mbsc-input data-dropdown="true" id="employee-shifts-start" />
+            </label>
+            <label for="employee-shifts-end">
+                To date
+                <input mbsc-input data-dropdown="true" id="employee-shifts-end" />
+            </label>
+            <div id="demo-employee-shifts-date"></div>
+        </div>
+        <div class="mbsc-form-group">
+            <label>
+                Staff
+                <input mbsc-input id="employee-staff-input" data-dropdown="false" data-tags="true" />
+            </label>
+            <select id="employee-staff-select" multiple>
+                @foreach($staff as $res)
+                <option value="{{$res->id}}">{{$res->name}}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="mbsc-form-group">
+            <label>
+                Notes
+                <textarea mbsc-textarea id="employee-project-notes"></textarea>
+            </label>
+        </div>
+        <div class="mbsc-button-group">
+            <button class="mbsc-button-block" id="employee-shifts-delete" mbsc-button data-color="danger"
+                data-variant="outline">Delete Project</button>
+        </div>
     </div>
-</div>
-<script>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    <script>
     var calendar;
 
     function moveCalender(ele) {
@@ -333,6 +234,7 @@
                         handler: function() {
                             var msg = "";
                             var color = "";
+                            var override="";
                             $.ajax({
                                 headers: {
                                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -352,15 +254,58 @@
                                     if (result.success == "true") {
                                         msg = result.msg;
                                         color = result.color;
+                                        if(result.override=="true")
+                                        {
+                                         override="true";
+                                        }
                                     }
                                 }
                             });
                             if (msg != "") {
-                                mobiscroll.toast({
+                                mobiscroll.snackbar({
                                     duration: 3000,
                                     message: msg,
                                     color: color,
-                                    display: 'top'
+                                    display: 'top',
+                                    button: override=="true"?{
+                                       text: 'Override',
+                                       action: function () {
+                                            
+                            var foremans_staff = staff.filter(x => x.id == tempShift.resource);
+                            let difference = array_diff(tempShift.staff, foremans_staff[0].staff_key.map(String));
+                            tempShift.color = difference.length > 0 ? "red" : "blue";
+
+                            tempShift.id = "";
+                            saveProject(tempShift);
+
+                            let event_array = [];
+                            let endDate = new Date(tempShift.end); // today
+                            let startDate = new Date(tempShift.start); // Jan 1st 2017
+                            let daysOfYear = [];
+                            for (let day = startDate; day <= endDate; day.setDate(day.getDate() + 1)) {
+                                setTimeout(function() {
+                                    calendar.updateEvent({
+                                        "allDay": false,
+                                        "end": '2023-10-11T13:00',
+                                        "id": ++latest_id,
+                                        "resource": tempShift.resource,
+                                        "slot": tempShift.slot,
+                                        "start": '2023-10-11T07:00',
+                                        "title": tempShift.title,
+                                        "staff": tempShift.staff,
+                                        "color": tempShift.color,
+                                    });
+                                }, 200);
+
+
+                            }
+
+
+
+                            deleteShift = false;
+                            popup.close();
+                                        }}:false
+                                       
                                 });
                                 return false;
                             }
@@ -438,6 +383,7 @@
                         handler: function() {
                             var msg = "";
                             var color = "";
+                            var override = "";
                             $.ajax({
                                 headers: {
                                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -458,15 +404,53 @@
                                     if (result.success == "true") {
                                         msg = result.msg;
                                         color = result.color;
+                                        if(result.override=="true")
+                                        {
+                                         console.log(override);   
+                                         override="true";
+                                        }
                                     }
                                 }
                             });
                             if (msg != "") {
-                                mobiscroll.toast({
+                                mobiscroll.snackbar({
                                     duration: 3000,
                                     message: msg,
                                     color: color,
-                                    display: 'top'
+                                    display: 'top',
+                                    button: override=="true"?{
+                                        
+                                       text: 'Override',
+                                       action: function () {
+                                         // update event with the new properties on save button click
+                            var data = {
+                                id: ev.id,
+                                title: $name.val(),
+                                notes: $notes.val(),
+                                start: new Date(tempShift.start),
+                                end: new Date(tempShift.end),
+                                staff: tempShift.staff,
+                                resource: resource.id,
+                                color: resource.color,
+                                slot: slot.id,
+                            }
+
+
+                            if (typeof tempShift.staff !== 'undefined') {
+                                var foremans_staff = staff.filter(x => x.id == tempShift.resource);
+                                let difference = array_diff(tempShift.staff, foremans_staff[0].staff_key.map(String));
+                                data.color = difference.length > 0 ? "red" : "blue";
+                            } else {
+                                data.color = "red";
+                            }
+                            calendar.updateEvent(data);
+                            setTimeout(function() {
+                                saveProject(data);
+                            }, 100);
+                            restoreShift = false;;
+                            popup.close();
+                                        }}:false
+                                       
                                 });
                                 return false;
                             }
@@ -566,6 +550,7 @@
             onEventUpdate: function(args, inst) {
                 var msg = "";
                 var color = "";
+                var override = "";
                 $.ajax({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -586,27 +571,36 @@
                         if (result.success == "true") {
                             msg = result.msg;
                             color = result.color;
+                            if(result.override=="true")
+                                        {
+                                         console.log(override);   
+                                         override="true";
+                                        }
                         }
                     }
                 });
                 if (msg != "") {
-                    mobiscroll.toast({
+                    mobiscroll.snackbar({
                         duration: 3000,
                         message: msg,
                         color: color,
-                        display: 'top'
+                        display: 'top',
+                        button:override=="true"?{
+                                       text: 'Override',
+                                       action: function () { 
+                                        setTimeout(function() {
+                    saveProject(args.event);
+                }, 500);}}:false
                     });
                     return false;
                 }
-                setTimeout(function() {
-                    saveProject(args.event);
-                }, 500);
+               
             },
             onEventCreate: function(args) {
                 var samedayEvent = calendar.getEvents(args.event.start);
                 if (samedayEvent.length > 0) {
                     if (args.event.resource == samedayEvent[0].resource) {
-                        mobiscroll.toast({
+                        mobiscroll.snackbar({
                             duration: 2000,
                             message: 'Already assigned to project !',
                             color: 'warning',
@@ -843,4 +837,4 @@
         return false;
     });
 </script>
-@endsection
+    @endsection
