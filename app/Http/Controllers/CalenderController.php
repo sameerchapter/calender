@@ -156,12 +156,12 @@ class CalenderController extends Controller
       } else {
         $schedule = new ProjectSchedule;
       }
-      $booking = Booking::where('address', $request->get('title'))->first();
+      $booking = Booking::whereRaw("REPLACE(`address`, '  ', ' ') = ? ", $request->get('title'))->first();
       if (!empty($booking)) {
         $schedule->event_id = $booking->id;
         $schedule->type = 1;
       } else {
-        $draft = Draft::where('address', $request->get('title'))->first();
+        $draft = Draft::whereRaw("REPLACE(`address`, '  ', ' ') = ? ", $request->get('title'))->first();
         if (!empty($draft)) {
           $schedule->event_id = $draft->id;
           $schedule->type = 2;
