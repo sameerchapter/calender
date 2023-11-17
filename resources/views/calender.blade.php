@@ -599,7 +599,7 @@
             onEventCreate: function(args) {
                 var samedayEvent = calendar.getEvents(args.event.start);
                 if (samedayEvent.length > 0) {
-                    if (args.event.resource == samedayEvent[0].resource) {
+                    if (samedayEvent.filter(v => v.resource == args.event.resource && v.slot == args.event.slot).length>0) {
                         mobiscroll.snackbar({
                             duration: 2000,
                             message: 'Already assigned to project !',
