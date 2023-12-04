@@ -88,7 +88,7 @@ class ApiController extends Controller
                 ], 401);
             }
             if ($request->get('model') == 'user') {
-                if(User::find($request->get('id')->hasRole('Admin')))
+                if(User::find($request->get('id'))->hasRole('Admin'))
                 {
                     $data =  ProjectSchedule::with('foreman')->where('foreman_id', $request->get('id'))->whereDate('start', date('Y-m-d', strtotime($request->get('date'))))->orderBy('slot', 'ASC')->get();
 
