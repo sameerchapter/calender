@@ -149,7 +149,7 @@ class ApiController extends Controller
 
     public function bookingData(Request $request)
     {
-        try {
+        // try {
             $validateUser = Validator::make(
                 $request->all(),
                 [
@@ -174,7 +174,7 @@ class ApiController extends Controller
             $data['floor_type'] = !empty($booking->floor_type) ? $booking->floor_type : "N/A";
             $data['floor_area'] = !empty($booking->floor_area) ? $booking->floor_area : "N/A";
             $data['booking_notes'] = !empty($booking->notes) ? $booking->notes : "N/A";
-            $data['notes'] = !empty($schedule->bcn) ? $schedule->notes : "N/A";
+            $data['notes'] = !empty($schedule->notes) ? $schedule->notes : "N/A";
             $data['staff_assigned'] = implode(" • ", Staff::whereIn('id', $schedule->staff_id)->get()->pluck('name')->toArray());
             $data['foreman_assigned'] = $schedule->foreman->name;
 
@@ -182,12 +182,12 @@ class ApiController extends Controller
                 'status' => true,
                 'data' => $data
             ], 200, [], JSON_UNESCAPED_UNICODE);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 500);
-        }
+        // } catch (\Throwable $th) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => $th->getMessage()
+        //     ], 500);
+        // }
     }
 
     public function saveToken(Request $request)
