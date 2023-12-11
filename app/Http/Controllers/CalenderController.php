@@ -80,7 +80,7 @@ class CalenderController extends Controller
 
     if (count($foreman_assigned) > 0) {
       $msg = "Foreman is already assigned to project.";
-      return json_encode(array("success" => "true", "color" => "warning", "msg" => $msg));
+      return json_encode(array("success" => "true",'override'=>"true","color" => "warning", "msg" => $msg));
     }
 
 
