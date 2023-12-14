@@ -213,7 +213,7 @@ class CalenderController extends Controller
                                 <div class="col-md-4">
                                     <div class="info-txt">
                                         <span>Address</span>
-                                        <p id="booking_address" style="text-decoration:underline;cursor:pointer">' . $booking->address . '</p>
+                                        <a id="booking_address" target="_blank" href="https://app.boxitfoundations.co.nz/projects?project_id='.$booking->id.'" style="font-weight:bold;color:black;text-decoration:underline;cursor:pointer">' . $booking->address . '</a>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
