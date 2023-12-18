@@ -46,7 +46,14 @@ class CalenderController extends Controller
     $projects = Booking::orderBy('id', 'DESC')->get();
     $drafts = Draft::orderBy('id', 'DESC')->get();
     $staff = Staff::all();
-    $schedules = ProjectSchedule::all();
+ 
+    if(Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Project Manager'))
+    {
+      $schedules = ProjectSchedule::all(); 
+    }else{
+      $auth_id=Auth::id();
+      $schedules = ProjectSchedule::whereJsonContains('staff_id',"$auth_id")->get(); 
+    }
     $latest_id = ProjectSchedule::latest()->first();
     if ($latest_id) {
       $latest_id = $latest_id->id;

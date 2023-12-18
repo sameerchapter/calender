@@ -179,10 +179,12 @@
                                     <textarea mbsc-textarea id="employee-project-notes"></textarea>
                                 </label>
                             </div>
+                            @if(Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Project Manager'))
                             <div class="mbsc-button-group">
                                 <button class="mbsc-button-block" id="employee-shifts-delete" mbsc-button
                                     data-color="danger" data-variant="outline">Delete Project</button>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -212,9 +214,11 @@
     mobiscroll.setOptions({
         theme: 'ios',
         themeVariant: 'light',
+        @if(Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Project Manager'))
         clickToCreate: true,
         dragToCreate: true,
         dragToMove: true,
+        @endif
         dragToResize: true,
         eventDelete: true,
     });
@@ -476,6 +480,7 @@
             headerText: headerText,
             buttons: [
                 'cancel',
+                @if(Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Project Manager'))
                 {
                     text: 'Save',
                     keyCode: 'enter',
@@ -583,6 +588,7 @@
                     },
                     cssClass: 'mbsc-popup-button-primary'
                 }
+                @endif
             ]
         });
 
@@ -626,10 +632,12 @@
         ],
         eventOverlap: false,
         data: shifts,
+        @if(Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Project Manager'))
         dragToCreate: true,
         dragToResize: true,
         dragToMove: true,
         clickToCreate: true,
+        @endif
         resources: staff,
         invalid: invalid,
         slots: slots,
