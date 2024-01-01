@@ -266,7 +266,7 @@
                 end: "<?php echo $res['to_date']; ?>",
                     title: "On Leave",
                         resource: "<?php echo $res['user_id']; ?>",
-                            slot: 1
+                            slot: 2
                 },
             <?php
             }
