@@ -44,6 +44,7 @@ class CalenderController extends Controller
       $q->where("name", "Foreman");
     })->whereNotIn('name', ['NA', 'N/A'])->get();
     $projects = Booking::orderBy('id', 'DESC')->get();
+    $leaves = Leaves::where('user_type',1)->get();
     $drafts = Draft::orderBy('id', 'DESC')->get();
     $staff = Staff::all();
  
@@ -60,7 +61,7 @@ class CalenderController extends Controller
     } else {
       $latest_id = 0;
     }
-    return view('calender', compact('drafts', 'foreman', 'projects', 'schedules', 'staff', 'latest_id'));
+    return view('calender', compact('leaves','drafts', 'foreman', 'projects', 'schedules', 'staff', 'latest_id'));
   }
 
   public function checkLeave(Request $request)

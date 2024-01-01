@@ -2,6 +2,11 @@
 
 @section('content')
 <style>
+    .mbsc-schedule-invalid-text{
+        color: red;
+    font-size: 15px;
+    font-weight: bold;
+    }
     .address-txt span,
     .info-txt span,
     .status-txt span,
@@ -248,6 +253,25 @@
             }
             ?>
         ];
+    
+        var invalid = [ <?php foreach($leaves as $res) { ?> {
+                start: "<?php echo $res['from_date']; ?>",
+                end: "<?php echo $res['to_date']; ?>",
+                    title: "On Leave",
+                        resource: "<?php echo $res['user_id']; ?>",
+                            slot: 1
+                },
+                {
+                    start: "<?php echo $res['from_date']; ?>",
+                end: "<?php echo $res['to_date']; ?>",
+                    title: "On Leave",
+                        resource: "<?php echo $res['user_id']; ?>",
+                            slot: 1
+                },
+            <?php
+            }
+            ?>];
+
 
     var shifts = [
             <?php foreach($schedules as $res) { ?> {
@@ -279,17 +303,7 @@
         name: 'PM',
     }];
 
-    var invalid = [{
-        start: '2023-06-11T00:00',
-        end: '2023-06-11T23:59',
-        resource: 4,
-        slot: 1
-    }, {
-        start: '2023-06-09T00:00',
-        end: '2023-06-09T23:59',
-        resource: 2,
-        slot: 2
-    }];
+    
 
     function array_diff(array1, array2) {
         var difference = $.grep(array1, function (el) {

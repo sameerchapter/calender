@@ -15,7 +15,7 @@
                 <td><b>{{ucfirst($foreman->name)}}</b></td>
                 <td>{{$foreman->email}}</td>
                 <td>Foreman</td>
-                <td><button class="btn btn-color btn-primary">Manage</button></td>
+                <td><button class="btn btn-color btn-primary leaves" data-name="{{$foreman->name}}" data-id="{{$foreman->id}}" data-type="1">Manage</button></td>
               </tr>
               @endforeach
               @foreach($staffs as $staff)
@@ -23,7 +23,7 @@
                 <td><b>{{ucfirst($staff->name)}}</b></td>
                 <td>{{$staff->email}}</td>
                 <td>Staff</td>
-                <td><button class="btn btn-color btn-primary">Manage</button></td>
+                <td><button class="btn btn-color btn-primary leaves" data-name="{{$staff->name}}" data-id="{{$staff->id}}" data-type="2">Manage</button></td>
               </tr>
               @endforeach
             </tbody>
